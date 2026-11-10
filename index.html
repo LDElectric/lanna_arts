@@ -490,7 +490,7 @@
     }
 
     .qr-box {
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       gap: 5px;
@@ -529,17 +529,19 @@
     }
 
     .qr-placeholder img {
+      display: none;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
 
     .qr-placeholder .placeholder-text {
       font-family: 'Fredoka', sans-serif;
-      font-size: 12px;
+      font-size: 9px;
       text-align: center;
       color: var(--rosa-forte);
       font-weight: 500;
+      line-height: 1.2;
       opacity: 0.9;
     }
 
@@ -1313,6 +1315,10 @@
         color: #F48FB1 !important;
       }
 
+      .qr-box {
+        display: flex !important;
+      }
+
       .instagram-link,
       .tiktok-box input {
         border: 1px solid #F8BBD0 !important;
@@ -1324,12 +1330,25 @@
         pointer-events: none !important;
       }
 
+      .instagram-link {
+        color: var(--texto) !important;
+        text-decoration: none !important;
+      }
+
       .qr-placeholder {
-        width: 16mm !important;
-        height: 16mm !important;
+        width: 22mm !important;
+        height: 22mm !important;
         border-radius: 3mm !important;
         border: 1px solid #F48FB1 !important;
         box-shadow: none !important;
+      }
+
+      .qr-placeholder img {
+        display: block !important;
+      }
+
+      .qr-placeholder .placeholder-text {
+        display: none !important;
       }
 
       .catalogo {
@@ -1459,8 +1478,8 @@
         </div>
         <div class="qr-box">
           <label>QR Code</label>
-          <div class="qr-placeholder" id="qrBox" title="Clique para adicionar QR Code">
-            <span class="placeholder-text">QR</span>
+          <div class="qr-placeholder" id="qrBox" title="Clique para adicionar QR Code para impressão">
+            <span class="placeholder-text">Somente no impresso</span>
             <input type="file" id="qrInput" accept="image/*">
           </div>
         </div>
@@ -1476,7 +1495,7 @@
     <button class="btn btn-secondary" id="btnClearEmpty">
       Limpar molduras vazias
     </button>
-    <button class="btn btn-print" id="btnPrint" title="Gera PDF / imprime em A4 com 4 desenhos por linha">
+    <button class="btn btn-print" id="btnPrint" title="Gera PDF / imprime em A4; Alt+clique para trocar o QR Code">
       <span style="font-size:16px;line-height:1">🖨</span> Imprimir catálogo
     </button>
   </div>
@@ -1542,6 +1561,16 @@
 
     function setImageInPlaceholder(boxId, src) {
       const box = document.getElementById(boxId);
+      if (boxId === 'qrBox') {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = 'QR Code para impressão';
+        box.insertBefore(img, box.querySelector('input'));
+        box.querySelector('.placeholder-text').textContent = 'QR pronto para imprimir';
+        bindPlaceholder(boxId, 'qrInput');
+        return;
+      }
+
       box.innerHTML = '';
       const img = document.createElement('img');
       img.src = src;
@@ -1788,6 +1817,20 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
+          if (boxId === 'qrBox') {
+            let img = box.querySelector('img');
+            if (!img) {
+              img = document.createElement('img');
+              box.insertBefore(img, input);
+            }
+            img.src = ev.target.result;
+            img.alt = 'QR Code para impressão';
+            box.querySelector('.placeholder-text').textContent = 'QR pronto para imprimir';
+            input.value = '';
+            save();
+            return;
+          }
+
           box.innerHTML = '';
           const img = document.createElement('img');
           img.src = ev.target.result;
@@ -1831,10 +1874,17 @@
       }
     });
 
-    document.getElementById('btnPrint').addEventListener('click', () => {
+    document.getElementById('btnPrint').addEventListener('click', (event) => {
       const withImages = frames.filter(f => f.image);
       if (withImages.length === 0) {
         showToast('Adicione pelo menos um desenho para imprimir');
+        return;
+      }
+      const qrInput = document.getElementById('qrInput');
+      const hasQrCode = Boolean(document.getElementById('qrBox').querySelector('img'));
+      if (!hasQrCode || event.altKey) {
+        showToast('Selecione o QR Code que será incluído no impresso');
+        qrInput.click();
         return;
       }
       // Garante que só os com imagem apareçam (já ocultamos .empty no CSS de print)
