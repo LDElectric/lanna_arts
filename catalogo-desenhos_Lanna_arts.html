@@ -455,8 +455,9 @@
       color: var(--rosa-accent);
     }
 
-    .instagram-box input,
+    .instagram-link,
     .tiktok-box input {
+      display: block;
       border: 1.5px solid rgba(244, 143, 177, 0.4);
       border-radius: 14px;
       padding: 8px 14px;
@@ -467,22 +468,22 @@
       background: #FFFCFD;
       color: var(--texto);
       outline: none;
+      text-decoration: none;
       transition: all 0.25s ease;
       box-shadow: 0 2px 8px rgba(236, 64, 122, 0.06);
     }
 
-    .instagram-box input:hover,
+    .instagram-link:hover,
     .tiktok-box input:hover {
       border-color: rgba(236, 64, 122, 0.55);
     }
 
-    .instagram-box input:focus,
+    .instagram-link:focus-visible,
     .tiktok-box input:focus {
       border-color: var(--rosa-accent);
       box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.12);
     }
 
-    .instagram-box input::placeholder,
     .tiktok-box input::placeholder {
       color: #F48FB1;
       opacity: 0.7;
@@ -928,7 +929,7 @@
         font-size: 1.55rem;
       }
 
-      .instagram-box input,
+      .instagram-link,
       .tiktok-box input {
         width: 132px;
         font-size: 13px;
@@ -1013,7 +1014,7 @@
         height: 11px;
       }
 
-      .instagram-box input,
+      .instagram-link,
       .tiktok-box input {
         width: 70px;
         padding: 4px 6px;
@@ -1148,7 +1149,7 @@
         font-size: 0.9rem;
       }
 
-      .instagram-box input,
+      .instagram-link,
       .tiktok-box input {
         width: 62px;
         font-size: 10px;
@@ -1312,7 +1313,7 @@
         color: #F48FB1 !important;
       }
 
-      .instagram-box input,
+      .instagram-link,
       .tiktok-box input {
         border: 1px solid #F8BBD0 !important;
         background: #FFF !important;
@@ -1447,7 +1448,7 @@
             </svg>
             Instagram
           </label>
-          <input type="text" id="instagramInput" placeholder="@seuuser" value="@Lanna.artees">
+          <a class="instagram-link" href="https://www.instagram.com/Lanna.artees/" target="_blank" rel="noopener noreferrer">@Lanna.artees</a>
         </div>
         <div class="tiktok-box">
           <label for="tiktokInput">
@@ -1511,7 +1512,6 @@
         frames,
         nextId,
         titulo: document.getElementById('tituloInput').value,
-        instagram: document.getElementById('instagramInput').value,
         tiktok: document.getElementById('tiktokInput').value,
         logo: document.getElementById('logoBox').querySelector('img')?.src || null,
         logoVersion: LOGO_VERSION,
@@ -1532,7 +1532,6 @@
         frames = data.frames || [];
         nextId = data.nextId || 1;
         if (data.titulo) document.getElementById('tituloInput').value = data.titulo;
-        if (data.instagram) document.getElementById('instagramInput').value = data.instagram;
         if (typeof data.tiktok === 'string') document.getElementById('tiktokInput').value = data.tiktok;
         if (data.logo && data.logoVersion === LOGO_VERSION) setImageInPlaceholder('logoBox', data.logo);
         if (data.qr) setImageInPlaceholder('qrBox', data.qr);
@@ -1845,9 +1844,8 @@
       }, 400);
     });
 
-    // Salvar título e redes sociais
+    // Salvar título e TikTok
     document.getElementById('tituloInput').addEventListener('change', save);
-    document.getElementById('instagramInput').addEventListener('change', save);
     document.getElementById('tiktokInput').addEventListener('change', save);
 
     // ========== TOAST ==========
