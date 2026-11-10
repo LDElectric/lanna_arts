@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo de Desenhos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rosa-claro: #FFE4EC;
+      --rosa-medio: #FFB6C1;
+      --rosa-forte: #F48FB1;
+      --rosa-accent: #EC407A;
+      --rosa-suave: #FCE4EC;
+      --branco: #FFFFFF;
+      --creme: #FFF8FA;
+      --texto: #6D5A6E;
+      --sombra: rgba(236, 64, 122, 0.12);
+      --borda: #F8BBD0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', system-ui, sans-serif;
+      background: 
+        radial-gradient(ellipse 120% 80% at 10% 20%, rgba(255, 182, 193, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 60% at 90% 10%, rgba(255, 192, 203, 0.3) 0%, transparent 45%),
+        radial-gradient(ellipse 80% 50% at 70% 80%, rgba(255, 228, 236, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse 90% 70% at 20% 90%, rgba(255, 240, 245, 0.6) 0%, transparent 45%),
+        linear-gradient(165deg, #FFF5F8 0%, #FFE8F0 35%, #FFF0F5 65%, #FFFFFF 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--texto);
+      line-height: 1.5;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ========== DECORAÇÕES DE FUNDO ========== */
+    .decorations {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 100px;
+      filter: blur(1px);
+      opacity: 0.85;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: '';
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .cloud-1 {
+      width: 180px;
+      height: 50px;
+      top: 12%;
+      left: 5%;
+      animation: float 22s ease-in-out infinite;
+    }
+    .cloud-1::before {
+      width: 70px;
+      height: 70px;
+      top: -35px;
+      left: 25px;
+    }
+    .cloud-1::after {
+      width: 55px;
+      height: 55px;
+      top: -25px;
+      left: 85px;
+    }
+
+    .cloud-2 {
+      width: 140px;
+      height: 40px;
+      top: 28%;
+      right: 8%;
+      animation: float 18s ease-in-out infinite reverse;
+      animation-delay: -5s;
+    }
+    .cloud-2::before {
+      width: 55px;
+      height: 55px;
+      top: -28px;
+      left: 20px;
+    }
+    .cloud-2::after {
+      width: 45px;
+      height: 45px;
+      top: -20px;
+      left: 65px;
+    }
+
+    .cloud-3 {
+      width: 160px;
+      height: 45px;
+      bottom: 18%;
+      left: 12%;
+      animation: float 25s ease-in-out infinite;
+      animation-delay: -10s;
+      opacity: 0.65;
+    }
+    .cloud-3::before {
+      width: 60px;
+      height: 60px;
+      top: -30px;
+      left: 22px;
+    }
+    .cloud-3::after {
+      width: 50px;
+      height: 50px;
+      top: -22px;
+      left: 75px;
+    }
+
+    .cloud-4 {
+      width: 120px;
+      height: 36px;
+      bottom: 35%;
+      right: 15%;
+      animation: float 20s ease-in-out infinite reverse;
+      animation-delay: -3s;
+      opacity: 0.7;
+    }
+    .cloud-4::before {
+      width: 48px;
+      height: 48px;
+      top: -24px;
+      left: 18px;
+    }
+    .cloud-4::after {
+      width: 40px;
+      height: 40px;
+      top: -18px;
+      left: 55px;
+    }
+
+    .star {
+      position: absolute;
+      color: #F8BBD0;
+      font-size: 18px;
+      opacity: 0.55;
+      animation: twinkle 3.5s ease-in-out infinite;
+    }
+
+    .star:nth-child(odd) {
+      animation-delay: 1.2s;
+    }
+
+    .heart {
+      position: absolute;
+      color: #F48FB1;
+      font-size: 14px;
+      opacity: 0.4;
+      animation: float 12s ease-in-out infinite;
+    }
+
+    .unicorn {
+      position: absolute;
+      font-size: 28px;
+      opacity: 0.35;
+      filter: grayscale(0.1);
+      animation: float 16s ease-in-out infinite;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #fff 20%, #F8BBD0 70%, transparent 100%);
+      border-radius: 50%;
+      opacity: 0;
+      animation: sparkle 4s ease-in-out infinite;
+    }
+
+    .rainbow {
+      position: absolute;
+      width: 120px;
+      height: 60px;
+      border-radius: 120px 120px 0 0;
+      border: 6px solid transparent;
+      border-top-color: rgba(255, 182, 193, 0.35);
+      border-left-color: rgba(255, 223, 186, 0.25);
+      border-right-color: rgba(186, 225, 255, 0.25);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,182,193,0.25));
+      border: 1px solid rgba(255,255,255,0.5);
+      opacity: 0.4;
+      animation: bubbleRise 14s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+      33% { transform: translateY(-14px) translateX(6px) rotate(1deg); }
+      66% { transform: translateY(-8px) translateX(-5px) rotate(-1deg); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+      50% { opacity: 0.85; transform: scale(1.25) rotate(12deg); }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0; transform: scale(0.4); }
+      40% { opacity: 0.9; transform: scale(1.2); }
+      70% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    @keyframes bubbleRise {
+      0% { transform: translateY(0) scale(1); opacity: 0.35; }
+      50% { transform: translateY(-40px) scale(1.1); opacity: 0.55; }
+      100% { transform: translateY(-80px) scale(0.9); opacity: 0.15; }
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(236, 64, 122, 0.12); }
+      50% { transform: scale(1.06); box-shadow: 0 6px 18px rgba(236, 64, 122, 0.2); }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(22px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 150%; }
+    }
+
+    /* Conteúdo acima das decorações */
+    .header,
+    .controls,
+    .catalogo,
+    .footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Animação de entrada das molduras */
+    .frame {
+      animation: fadeInUp 0.55s ease-out both;
+    }
+
+    .frame:nth-child(1) { animation-delay: 0.05s; }
+    .frame:nth-child(2) { animation-delay: 0.1s; }
+    .frame:nth-child(3) { animation-delay: 0.15s; }
+    .frame:nth-child(4) { animation-delay: 0.2s; }
+    .frame:nth-child(5) { animation-delay: 0.25s; }
+    .frame:nth-child(6) { animation-delay: 0.3s; }
+    .frame:nth-child(7) { animation-delay: 0.35s; }
+    .frame:nth-child(8) { animation-delay: 0.4s; }
+    .frame:nth-child(n+9) { animation-delay: 0.45s; }
+
+    .frame.empty .plus-icon {
+      animation: pulseSoft 2.8s ease-in-out infinite;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,249,251,0.88) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: none;
+      box-shadow: 0 8px 32px rgba(236, 64, 122, 0.07);
+      padding: 18px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 90px;
+    }
+
+    .logo-placeholder {
+      width: 112px;
+      height: 112px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .logo-placeholder:hover {
+      opacity: 0.9;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .logo-placeholder .placeholder-text {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 12px;
+      text-align: center;
+      color: var(--rosa-forte);
+      font-weight: 500;
+      padding: 6px;
+      line-height: 1.25;
+      opacity: 0.9;
+    }
+
+    .logo-placeholder input {
+      display: none;
+    }
+
+    .titulo {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 1.85rem;
+      color: var(--rosa-accent);
+      text-align: center;
+      flex: 1;
+      min-width: 220px;
+      letter-spacing: -0.02em;
+    }
+
+    .titulo input {
+      font-family: inherit;
+      font-weight: inherit;
+      font-size: inherit;
+      color: inherit;
+      border: none;
+      background: transparent;
+      text-align: center;
+      width: 100%;
+      outline: none;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+      transition: border-color 0.25s ease;
+    }
+
+    .titulo input:hover,
+    .titulo input:focus {
+      border-bottom-color: rgba(236, 64, 122, 0.35);
+    }
+
+    .titulo input::placeholder {
+      color: #F8BBD0;
+      opacity: 0.8;
+    }
+
+    .social-area {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .instagram-box,
+    .tiktok-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .instagram-box label,
+    .tiktok-box label {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--rosa-forte);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .instagram-box .ig-icon,
+    .tiktok-box .tiktok-icon {
+      flex-shrink: 0;
+      color: var(--rosa-accent);
+    }
+
+    .instagram-box input,
+    .tiktok-box input {
+      border: 1.5px solid rgba(244, 143, 177, 0.4);
+      border-radius: 14px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-family: 'Nunito', sans-serif;
+      width: 148px;
+      text-align: center;
+      background: #FFFCFD;
+      color: var(--texto);
+      outline: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px rgba(236, 64, 122, 0.06);
+    }
+
+    .instagram-box input:hover,
+    .tiktok-box input:hover {
+      border-color: rgba(236, 64, 122, 0.55);
+    }
+
+    .instagram-box input:focus,
+    .tiktok-box input:focus {
+      border-color: var(--rosa-accent);
+      box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.12);
+    }
+
+    .instagram-box input::placeholder,
+    .tiktok-box input::placeholder {
+      color: #F48FB1;
+      opacity: 0.7;
+    }
+
+    .qr-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .qr-box label {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--rosa-forte);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.85;
+    }
+
+    .qr-placeholder {
+      width: 68px;
+      height: 68px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #FFF0F5, #FFE4EC);
+      border: 2px solid rgba(244, 143, 177, 0.45);
+      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .qr-placeholder:hover {
+      border-color: var(--rosa-accent);
+      box-shadow: 0 6px 18px rgba(236, 64, 122, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .qr-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .qr-placeholder .placeholder-text {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 12px;
+      text-align: center;
+      color: var(--rosa-forte);
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .qr-placeholder input {
+      display: none;
+    }
+
+    /* ========== CONTROLES ========== */
+    .controls {
+      max-width: 1200px;
+      margin: 24px auto 8px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.5s ease-out 0.15s both;
+    }
+
+    .btn {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(236, 64, 122, 0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #F48FB1 0%, #EC407A 55%, #E91E63 100%);
+      background-size: 200% auto;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      animation: shimmer 3.5s ease-in-out infinite;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(236, 64, 122, 0.3);
+      filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #FFFFFF, #FFF5F8);
+      color: var(--rosa-accent);
+      border: 1.5px solid rgba(244, 143, 177, 0.5);
+      box-shadow: 0 3px 12px rgba(236, 64, 122, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(180deg, #FFF5F8, #FFE4EC);
+      border-color: var(--rosa-forte);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(236, 64, 122, 0.15);
+    }
+
+    .btn-danger {
+      background: #FFEBEE;
+      color: #E53935;
+      border: 2px solid #FFCDD2;
+    }
+
+    .btn-danger:hover {
+      background: #FFCDD2;
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, #CE93D8 0%, #AB47BC 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(171, 71, 188, 0.3);
+      filter: brightness(1.05);
+    }
+
+    /* ========== GRID ========== */
+    .catalogo {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 280px));
+      gap: 28px;
+      justify-content: center;
+    }
+
+    /* ========== FRAME (moldura) ========== */
+    .frame {
+      width: 280px;
+      height: 320px;
+      max-width: 100%;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FFFCFD 100%);
+      border-radius: 22px;
+      border: 2px solid rgba(244, 143, 177, 0.4);
+      box-shadow: 
+        0 8px 28px rgba(236, 64, 122, 0.1),
+        0 2px 8px rgba(236, 64, 122, 0.06);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .frame:hover {
+      transform: translateY(-5px);
+      border-color: rgba(236, 64, 122, 0.55);
+      box-shadow: 
+        0 14px 36px rgba(236, 64, 122, 0.16),
+        0 4px 12px rgba(236, 64, 122, 0.08);
+    }
+
+    .frame.empty {
+      background: linear-gradient(160deg, #FFF9FB 0%, #FFE8F0 50%, #FFD6E4 100%);
+      border-style: dashed;
+      border-color: rgba(244, 143, 177, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      height: 320px;
+    }
+
+    .frame.empty:hover {
+      background: linear-gradient(160deg, #FFF0F5 0%, #FFD6E4 50%, #FFC0D4 100%);
+      border-color: var(--rosa-accent);
+    }
+
+    .frame.empty .plus-icon {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #FFFFFF, #FFF5F8);
+      border: 2px solid rgba(244, 143, 177, 0.5);
+      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: var(--rosa-accent);
+      font-weight: 300;
+      line-height: 1;
+      transition: transform 0.2s ease;
+      animation: pulseSoft 2.8s ease-in-out infinite;
+    }
+
+    .frame.empty:hover .plus-icon {
+      animation: none;
+      transform: scale(1.08);
+    }
+
+    .frame.empty .empty-text {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 15px;
+      color: var(--rosa-forte);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    /* Área da imagem com overflow hidden */
+    .frame-content {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    .frame-content img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: center center;
+      user-select: none;
+      pointer-events: none;
+      max-width: none;
+    }
+
+    /* Controles da moldura */
+    .frame-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+
+    .frame:hover .frame-actions {
+      opacity: 1;
+    }
+
+    .frame-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: transform 0.15s;
+    }
+
+    .frame-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .frame-btn.delete {
+      color: #E53935;
+    }
+
+    .frame-btn.adjust {
+      color: var(--rosa-accent);
+    }
+
+    .frame-btn.replace {
+      color: #43A047;
+    }
+
+    /* Overlay de ajuste */
+    .adjust-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 16px;
+      z-index: 20;
+      cursor: grab;
+    }
+
+    .adjust-overlay.active {
+      display: flex;
+    }
+
+    .adjust-overlay:active {
+      cursor: grabbing;
+    }
+
+    .adjust-controls {
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      width: 90%;
+      max-width: 240px;
+    }
+
+    .adjust-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .adjust-row label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto);
+      min-width: 50px;
+    }
+
+    .adjust-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--rosa-accent);
+    }
+
+    .adjust-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .adjust-btns button {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background: var(--rosa-accent);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: #eee;
+      color: #555;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: white;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* ========== FOOTER ========== */
+    .footer {
+      text-align: center;
+      padding: 30px 20px 40px;
+      font-size: 13px;
+      color: var(--rosa-forte);
+      opacity: 0.75;
+      font-family: 'Fredoka', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    /* ========== TOAST ========== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: linear-gradient(135deg, #F48FB1, #EC407A);
+      color: white;
+      padding: 13px 26px;
+      border-radius: 50px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 15px;
+      box-shadow: 0 10px 28px rgba(236, 64, 122, 0.35);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      max-width: calc(100% - 32px);
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ========== RESPONSIVO - TABLET ========== */
+    @media (max-width: 900px) {
+      .header {
+        padding: 14px 18px;
+      }
+
+      .header-inner {
+        gap: 16px;
+      }
+
+      .logo-placeholder {
+        width: 88px;
+        height: 88px;
+        border-radius: 18px;
+      }
+
+      .titulo {
+        font-size: 1.55rem;
+      }
+
+      .instagram-box input,
+      .tiktok-box input {
+        width: 132px;
+        font-size: 13px;
+        padding: 7px 12px;
+      }
+
+      .qr-placeholder {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+      }
+
+      .catalogo {
+        gap: 22px;
+        padding: 18px 16px;
+      }
+
+      .controls {
+        padding: 0 16px;
+        margin-top: 18px;
+      }
+    }
+
+    /* ========== RESPONSIVO - MOBILE ========== */
+    @media (max-width: 640px) {
+      .header {
+        padding: 8px 10px;
+      }
+
+      .header-inner {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo-area {
+        min-width: auto;
+        flex-shrink: 0;
+        order: 0;
+      }
+
+      .titulo {
+        font-size: 1rem;
+        order: 1;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+      }
+
+      .titulo input {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .social-area {
+        width: auto;
+        justify-content: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+        order: 2;
+      }
+
+      .instagram-box,
+      .tiktok-box {
+        gap: 2px;
+      }
+
+      .instagram-box label,
+      .tiktok-box label {
+        font-size: 8px;
+        letter-spacing: 0.3px;
+        gap: 3px;
+      }
+
+      .instagram-box .ig-icon,
+      .tiktok-box .tiktok-icon {
+        width: 11px;
+        height: 11px;
+      }
+
+      .instagram-box input,
+      .tiktok-box input {
+        width: 70px;
+        padding: 4px 6px;
+        font-size: 11px;
+        border-radius: 10px;
+      }
+
+      .qr-box {
+        gap: 2px;
+      }
+
+      .qr-box label {
+        font-size: 8px;
+        letter-spacing: 0.3px;
+      }
+
+      .logo-placeholder {
+        width: 58px;
+        height: 68px;
+      }
+
+      .logo-placeholder .placeholder-text {
+        font-size: 8px;
+        padding: 2px;
+        line-height: 1.1;
+      }
+
+      .qr-placeholder {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+      }
+
+      .qr-placeholder .placeholder-text {
+        font-size: 9px;
+      }
+
+      .controls {
+        margin: 12px auto 4px;
+        padding: 0 10px;
+        gap: 8px;
+      }
+
+      .btn {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      .catalogo {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        padding: 12px 10px 18px;
+        justify-items: center;
+      }
+
+      .frame,
+      .frame.empty {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+        aspect-ratio: 280 / 320;
+      }
+
+      /* Botões sempre visíveis no mobile (sem hover) */
+      .frame-actions {
+        opacity: 1;
+        top: 6px;
+        right: 6px;
+      }
+
+      .frame-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+      }
+
+      .frame.empty .plus-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+      }
+
+      .frame.empty .empty-text {
+        font-size: 13px;
+      }
+
+      /* Ajuste mais confortável no toque */
+      .adjust-controls {
+        width: 94%;
+        max-width: 280px;
+        padding: 14px 16px;
+        gap: 12px;
+      }
+
+      .adjust-row label {
+        font-size: 13px;
+        min-width: 48px;
+      }
+
+      .adjust-btns button {
+        font-size: 14px;
+        padding: 8px 18px;
+      }
+
+      .hint {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .footer {
+        padding: 20px 14px 32px;
+        font-size: 11px;
+        line-height: 1.4;
+      }
+    }
+
+    /* ========== RESPONSIVO - CELULAR PEQUENO ========== */
+    @media (max-width: 400px) {
+      .header {
+        padding: 6px 8px;
+      }
+
+      .header-inner {
+        gap: 6px;
+      }
+
+      .titulo {
+        font-size: 0.9rem;
+      }
+
+      .titulo input {
+        font-size: 0.9rem;
+      }
+
+      .instagram-box input,
+      .tiktok-box input {
+        width: 62px;
+        font-size: 10px;
+        padding: 3px 5px;
+      }
+
+      .instagram-box label,
+      .tiktok-box label {
+        font-size: 7px;
+      }
+
+      .qr-box label {
+        font-size: 7px;
+      }
+
+      .logo-placeholder {
+        width: 50px;
+        height: 58px;
+      }
+
+      .logo-placeholder .placeholder-text {
+        font-size: 7px;
+      }
+
+      .qr-placeholder {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+
+      .social-area {
+        gap: 6px;
+      }
+
+      .catalogo {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 10px 8px 16px;
+      }
+
+      .frame,
+      .frame.empty {
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .btn {
+        justify-content: center;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 9px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* Melhora toque em dispositivos touch */
+    @media (hover: none) and (pointer: coarse) {
+      .frame-actions {
+        opacity: 1;
+      }
+
+      .frame:hover {
+        transform: none;
+      }
+
+      .btn:hover {
+        transform: none;
+      }
+
+      .frame-btn:hover {
+        transform: none;
+      }
+    }
+
+    /* Respeita preferência de reduzir movimento */
+    @media (prefers-reduced-motion: reduce) {
+      .cloud, .star, .heart, .unicorn, .sparkle, .bubble, .rainbow,
+      .frame, .controls, .frame.empty .plus-icon, .btn-primary::after {
+        animation: none !important;
+      }
+    }
+
+    /* ========== IMPRESSÃO A4 ========== */
+    @page {
+      size: A4 portrait;
+      margin: 12mm 10mm 12mm 10mm;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      html, body {
+        background: #FFF5F8 !important;
+        background-image: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .decorations,
+      .controls,
+      .footer,
+      .toast,
+      .frame-actions,
+      .adjust-overlay,
+      .frame.empty {
+        display: none !important;
+      }
+
+      .header {
+        position: static !important;
+        background: linear-gradient(180deg, #FFFFFF 0%, #FFF0F5 100%) !important;
+        box-shadow: none !important;
+        border-bottom: 2px solid #F8BBD0 !important;
+        padding: 8mm 4mm 6mm !important;
+        margin-bottom: 5mm !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+
+      .header-inner {
+        max-width: 100% !important;
+        gap: 8mm !important;
+        flex-wrap: nowrap !important;
+      }
+
+      .logo-placeholder {
+        width: 18mm !important;
+        height: 18mm !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .titulo {
+        font-size: 18pt !important;
+        color: #EC407A !important;
+      }
+
+      .titulo input {
+        border: none !important;
+        pointer-events: none !important;
+      }
+
+      .instagram-box label,
+      .tiktok-box label,
+      .qr-box label {
+        font-size: 7pt !important;
+        color: #F48FB1 !important;
+      }
+
+      .instagram-box input,
+      .tiktok-box input {
+        border: 1px solid #F8BBD0 !important;
+        background: #FFF !important;
+        font-size: 9pt !important;
+        width: 32mm !important;
+        padding: 1.5mm 2mm !important;
+        box-shadow: none !important;
+        pointer-events: none !important;
+      }
+
+      .qr-placeholder {
+        width: 16mm !important;
+        height: 16mm !important;
+        border-radius: 3mm !important;
+        border: 1px solid #F48FB1 !important;
+        box-shadow: none !important;
+      }
+
+      .catalogo {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5mm 4mm !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        justify-content: stretch !important;
+        justify-items: stretch !important;
+      }
+
+      .frame {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        aspect-ratio: 280 / 320 !important;
+        border: 1.5pt solid #F48FB1 !important;
+        border-radius: 3mm !important;
+        box-shadow: none !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        animation: none !important;
+        transform: none !important;
+        background: #fff !important;
+        overflow: hidden !important;
+      }
+
+      .frame-content {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .frame-content img {
+        /* Mantém o ajuste de posição/zoom feito na tela */
+      }
+
+      /* Evita quebra estranha no final da página */
+      .catalogo {
+        page-break-inside: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Decorações de fundo (nuvens, estrelas, unicórnios, bolhas...) -->
+  <div class="decorations" aria-hidden="true">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="cloud cloud-4"></div>
+
+    <div class="rainbow" style="top: 8%; right: 18%; transform: scale(0.7);"></div>
+    <div class="rainbow" style="bottom: 12%; left: 8%; transform: scale(0.55) rotate(-8deg); opacity: 0.4;"></div>
+
+    <span class="star" style="top:8%; left:18%;">✦</span>
+    <span class="star" style="top:15%; left:72%; font-size:14px;">★</span>
+    <span class="star" style="top:42%; left:8%; font-size:12px;">✦</span>
+    <span class="star" style="top:55%; right:12%; font-size:16px;">★</span>
+    <span class="star" style="top:78%; left:25%; font-size:13px;">✦</span>
+    <span class="star" style="top:22%; right:22%; font-size:11px;">✧</span>
+    <span class="star" style="bottom:12%; right:30%;">★</span>
+    <span class="star" style="top:65%; left:55%; font-size:10px;">✧</span>
+    <span class="star" style="top:5%; left:45%; font-size:12px;">✦</span>
+
+    <span class="heart" style="top:35%; left:4%;">♡</span>
+    <span class="heart" style="top:60%; right:5%; font-size:12px;">♥</span>
+    <span class="heart" style="bottom:25%; left:40%; font-size:11px;">♡</span>
+    <span class="heart" style="top:12%; right:35%; font-size:13px; animation-delay: -4s;">♥</span>
+
+    <span class="unicorn" style="top:18%; right:4%;">🦄</span>
+    <span class="unicorn" style="bottom:22%; left:3%; font-size:24px; opacity:0.28;">🦄</span>
+    <span class="unicorn" style="top:48%; left:88%; font-size:22px; opacity:0.25;">✨</span>
+    <span class="unicorn" style="bottom:8%; right:8%; font-size:20px; opacity:0.22;">🌈</span>
+
+    <!-- Sparkles -->
+    <span class="sparkle" style="top:20%; left:30%; animation-delay: 0s;"></span>
+    <span class="sparkle" style="top:35%; left:70%; animation-delay: 1.2s;"></span>
+    <span class="sparkle" style="top:50%; left:15%; animation-delay: 2.1s;"></span>
+    <span class="sparkle" style="top:70%; left:80%; animation-delay: 0.7s;"></span>
+    <span class="sparkle" style="top:25%; left:50%; animation-delay: 3s;"></span>
+    <span class="sparkle" style="top:80%; left:45%; animation-delay: 1.8s;"></span>
+    <span class="sparkle" style="top:10%; left:85%; animation-delay: 2.5s;"></span>
+
+    <!-- Bolhas -->
+    <span class="bubble" style="width:18px; height:18px; bottom:5%; left:20%; animation-delay: 0s;"></span>
+    <span class="bubble" style="width:12px; height:12px; bottom:8%; left:60%; animation-delay: 3s;"></span>
+    <span class="bubble" style="width:22px; height:22px; bottom:3%; right:25%; animation-delay: 6s;"></span>
+    <span class="bubble" style="width:14px; height:14px; bottom:12%; left:40%; animation-delay: 1.5s;"></span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <!-- Logo -->
+      <div class="logo-area">
+        <div class="logo-placeholder" id="logoBox" title="Clique para alterar seu logo">
+          <img src="lanna-artes-logo.png" alt="Logo Lanna Arts">
+          <input type="file" id="logoInput" accept="image/*">
+        </div>
+      </div>
+
+      <!-- Título -->
+      <div class="titulo">
+        <input type="text" id="tituloInput" value="Catálogo de Desenhos" placeholder="Título do catálogo">
+      </div>
+
+      <!-- Redes sociais + QR -->
+      <div class="social-area">
+        <div class="instagram-box">
+          <label>
+            <svg class="ig-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+            </svg>
+            Instagram
+          </label>
+          <input type="text" id="instagramInput" placeholder="@seuuser" value="@Lanna.artees">
+        </div>
+        <div class="tiktok-box">
+          <label for="tiktokInput">
+            <span class="tiktok-icon" aria-hidden="true">♪</span>
+            TikTok
+          </label>
+          <input type="text" id="tiktokInput" placeholder="@seuuser" value="">
+        </div>
+        <div class="qr-box">
+          <label>QR Code</label>
+          <div class="qr-placeholder" id="qrBox" title="Clique para adicionar QR Code">
+            <span class="placeholder-text">QR</span>
+            <input type="file" id="qrInput" accept="image/*">
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTROLES -->
+  <div class="controls">
+    <button class="btn btn-primary" id="btnAdd">
+      <span style="font-size:20px;line-height:1">+</span> Adicionar moldura
+    </button>
+    <button class="btn btn-secondary" id="btnClearEmpty">
+      Limpar molduras vazias
+    </button>
+    <button class="btn btn-print" id="btnPrint" title="Gera PDF / imprime em A4 com 4 desenhos por linha">
+      <span style="font-size:16px;line-height:1">🖨</span> Imprimir catálogo
+    </button>
+  </div>
+
+  <!-- CATÁLOGO -->
+  <main class="catalogo" id="catalogo">
+    <!-- frames gerados via JS -->
+  </main>
+
+  <div class="footer">
+    Toque em uma moldura vazia para adicionar um desenho • Ajuste posição e zoom • Use “Imprimir catálogo” para gerar o PDF em A4
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========== ESTADO ==========
+    const STORAGE_KEY = 'catalogo_desenhos_v1';
+    const LOGO_VERSION = 3;
+
+    let frames = [];
+    let nextId = 1;
+
+    // Estado de ajuste
+    let adjustingId = null;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startOffsetX = 0, startOffsetY = 0;
+
+    // ========== PERSISTÊNCIA ==========
+    function save() {
+      const data = {
+        frames,
+        nextId,
+        titulo: document.getElementById('tituloInput').value,
+        instagram: document.getElementById('instagramInput').value,
+        tiktok: document.getElementById('tiktokInput').value,
+        logo: document.getElementById('logoBox').querySelector('img')?.src || null,
+        logoVersion: LOGO_VERSION,
+        qr: document.getElementById('qrBox').querySelector('img')?.src || null
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        showToast('Espaço de armazenamento cheio. Tente imagens menores.');
+      }
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        frames = data.frames || [];
+        nextId = data.nextId || 1;
+        if (data.titulo) document.getElementById('tituloInput').value = data.titulo;
+        if (data.instagram) document.getElementById('instagramInput').value = data.instagram;
+        if (typeof data.tiktok === 'string') document.getElementById('tiktokInput').value = data.tiktok;
+        if (data.logo && data.logoVersion === LOGO_VERSION) setImageInPlaceholder('logoBox', data.logo);
+        if (data.qr) setImageInPlaceholder('qrBox', data.qr);
+      } catch (e) {
+        console.warn('Erro ao carregar dados', e);
+      }
+    }
+
+    function setImageInPlaceholder(boxId, src) {
+      const box = document.getElementById(boxId);
+      box.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = src;
+      box.appendChild(img);
+      // recria o input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.id = boxId === 'logoBox' ? 'logoInput' : 'qrInput';
+      box.appendChild(input);
+      bindPlaceholder(boxId, input.id);
+    }
+
+    // ========== RENDER ==========
+    function render() {
+      const container = document.getElementById('catalogo');
+      container.innerHTML = '';
+
+      frames.forEach(frame => {
+        const el = document.createElement('div');
+        el.className = 'frame' + (frame.image ? '' : ' empty');
+        el.dataset.id = frame.id;
+
+        if (!frame.image) {
+          el.innerHTML = `
+            <div class="plus-icon">+</div>
+            <div class="empty-text">Adicionar desenho</div>
+          `;
+          el.addEventListener('click', () => triggerUpload(frame.id));
+        } else {
+          el.innerHTML = `
+            <div class="frame-content">
+              <img src="${frame.image}" alt="Desenho" style="
+                width: auto;
+                height: auto;
+                transform: translate(calc(-50% + ${frame.offsetX}px), calc(-50% + ${frame.offsetY}px)) scale(${frame.scale});
+              ">
+            </div>
+            <div class="frame-actions">
+              <button class="frame-btn adjust" title="Ajustar posição/zoom">✎</button>
+              <button class="frame-btn replace" title="Trocar imagem">↺</button>
+              <button class="frame-btn delete" title="Remover desenho">✕</button>
+            </div>
+            <div class="adjust-overlay" id="overlay-${frame.id}">
+              <div class="hint">Arraste a imagem • Use o zoom</div>
+              <div class="adjust-controls">
+                <div class="adjust-row">
+                  <label>Zoom</label>
+                  <input type="range" min="0.4" max="3" step="0.05" value="${frame.scale}" class="zoom-range">
+                </div>
+                <div class="adjust-btns">
+                  <button class="btn-cancel">Cancelar</button>
+                  <button class="btn-save">Salvar</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // eventos
+          const adjustBtn = el.querySelector('.adjust');
+          const replaceBtn = el.querySelector('.replace');
+          const deleteBtn = el.querySelector('.delete');
+          const overlay = el.querySelector('.adjust-overlay');
+          const zoomRange = el.querySelector('.zoom-range');
+          const btnSave = el.querySelector('.btn-save');
+          const btnCancel = el.querySelector('.btn-cancel');
+          const img = el.querySelector('img');
+
+          adjustBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            startAdjust(frame.id);
+          });
+
+          replaceBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            triggerUpload(frame.id);
+          });
+
+          deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Remover este desenho?')) {
+              frame.image = null;
+              frame.scale = 1;
+              frame.offsetX = 0;
+              frame.offsetY = 0;
+              save();
+              render();
+              showToast('Desenho removido');
+            }
+          });
+
+          // Zoom durante ajuste
+          zoomRange.addEventListener('input', () => {
+            frame.scale = parseFloat(zoomRange.value);
+            updateImgTransform(img, frame);
+          });
+
+          btnSave.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endAdjust(true);
+          });
+
+          btnCancel.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endAdjust(false);
+          });
+
+          // Drag
+          overlay.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.adjust-controls')) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startOffsetX = frame.offsetX;
+            startOffsetY = frame.offsetY;
+            e.preventDefault();
+          });
+
+          // Touch
+          overlay.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.adjust-controls')) return;
+            isDragging = true;
+            const t = e.touches[0];
+            startX = t.clientX;
+            startY = t.clientY;
+            startOffsetX = frame.offsetX;
+            startOffsetY = frame.offsetY;
+          }, { passive: true });
+        }
+
+        container.appendChild(el);
+      });
+    }
+
+    function updateImgTransform(img, frame) {
+      img.style.transform = `translate(calc(-50% + ${frame.offsetX}px), calc(-50% + ${frame.offsetY}px)) scale(${frame.scale})`;
+    }
+
+    // ========== AJUSTE ==========
+    let backupFrame = null;
+
+    function startAdjust(id) {
+      adjustingId = id;
+      const frame = frames.find(f => f.id === id);
+      backupFrame = { ...frame };
+
+      const overlay = document.getElementById(`overlay-${id}`);
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function endAdjust(saveChanges) {
+      if (!adjustingId) return;
+      const frame = frames.find(f => f.id === adjustingId);
+
+      if (!saveChanges && backupFrame) {
+        Object.assign(frame, backupFrame);
+      }
+
+      const overlay = document.getElementById(`overlay-${adjustingId}`);
+      if (overlay) overlay.classList.remove('active');
+
+      adjustingId = null;
+      backupFrame = null;
+      isDragging = false;
+      save();
+      render();
+      if (saveChanges) showToast('Ajuste salvo!');
+    }
+
+    // Listeners globais de drag
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging || !adjustingId) return;
+      const frame = frames.find(f => f.id === adjustingId);
+      if (!frame) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      frame.offsetX = startOffsetX + dx;
+      frame.offsetY = startOffsetY + dy;
+
+      const img = document.querySelector(`.frame[data-id="${adjustingId}"] img`);
+      if (img) updateImgTransform(img, frame);
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging || !adjustingId) return;
+      const frame = frames.find(f => f.id === adjustingId);
+      if (!frame) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      frame.offsetX = startOffsetX + dx;
+      frame.offsetY = startOffsetY + dy;
+
+      const img = document.querySelector(`.frame[data-id="${adjustingId}"] img`);
+      if (img) updateImgTransform(img, frame);
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    // ========== UPLOAD ==========
+    function triggerUpload(frameId) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const frame = frames.find(f => f.id === frameId);
+          if (frame) {
+            frame.image = ev.target.result;
+            frame.scale = 1;
+            frame.offsetX = 0;
+            frame.offsetY = 0;
+            save();
+            render();
+            showToast('Desenho adicionado!');
+            // Abre automaticamente o modo de ajuste
+            setTimeout(() => startAdjust(frameId), 100);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+
+    // ========== PLACEHOLDERS (logo / QR) ==========
+    function bindPlaceholder(boxId, inputId) {
+      const box = document.getElementById(boxId);
+      const input = document.getElementById(inputId);
+      if (!box || !input) return;
+
+      box.onclick = () => input.click();
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          box.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          box.appendChild(img);
+          // recria input
+          const newInput = document.createElement('input');
+          newInput.type = 'file';
+          newInput.accept = 'image/*';
+          newInput.id = inputId;
+          box.appendChild(newInput);
+          bindPlaceholder(boxId, inputId);
+          save();
+        };
+        reader.readAsDataURL(file);
+      };
+    }
+
+    // ========== AÇÕES ==========
+    document.getElementById('btnAdd').addEventListener('click', () => {
+      frames.push({
+        id: nextId++,
+        image: null,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0
+      });
+      save();
+      render();
+      showToast('Nova moldura adicionada');
+    });
+
+    document.getElementById('btnClearEmpty').addEventListener('click', () => {
+      const before = frames.length;
+      frames = frames.filter(f => f.image);
+      if (frames.length < before) {
+        save();
+        render();
+        showToast('Molduras vazias removidas');
+      } else {
+        showToast('Nenhuma moldura vazia');
+      }
+    });
+
+    document.getElementById('btnPrint').addEventListener('click', () => {
+      const withImages = frames.filter(f => f.image);
+      if (withImages.length === 0) {
+        showToast('Adicione pelo menos um desenho para imprimir');
+        return;
+      }
+      // Garante que só os com imagem apareçam (já ocultamos .empty no CSS de print)
+      showToast('Abrindo impressão… escolha “Salvar como PDF”');
+      setTimeout(() => {
+        window.print();
+      }, 400);
+    });
+
+    // Salvar título e redes sociais
+    document.getElementById('tituloInput').addEventListener('change', save);
+    document.getElementById('instagramInput').addEventListener('change', save);
+    document.getElementById('tiktokInput').addEventListener('change', save);
+
+    // ========== TOAST ==========
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    load();
+
+    // Se não tiver nenhuma moldura, cria 6 iniciais
+    if (frames.length === 0) {
+      for (let i = 0; i < 6; i++) {
+        frames.push({
+          id: nextId++,
+          image: null,
+          scale: 1,
+          offsetX: 0,
+          offsetY: 0
+        });
+      }
+      save();
+    }
+
+    render();
+    bindPlaceholder('logoBox', 'logoInput');
+    bindPlaceholder('qrBox', 'qrInput');
+  </script>
+</body>
+</html>
