@@ -1220,6 +1220,11 @@
     }
 
     @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -1227,17 +1232,23 @@
       }
 
       html, body {
-        background: #FFFFFF !important;
-        background-image: none !important;
+        background: 
+          radial-gradient(ellipse 120% 80% at 10% 20%, rgba(255, 182, 193, 0.35) 0%, transparent 50%),
+          radial-gradient(ellipse 100% 60% at 90% 10%, rgba(255, 192, 203, 0.3) 0%, transparent 45%),
+          radial-gradient(ellipse 80% 50% at 70% 80%, rgba(255, 228, 236, 0.5) 0%, transparent 50%),
+          radial-gradient(ellipse 90% 70% at 20% 90%, rgba(255, 240, 245, 0.6) 0%, transparent 45%),
+          linear-gradient(165deg, #FFF5F8 0%, #FFE8F0 35%, #FFF0F5 65%, #FFFFFF 100%) !important;
+        background-color: #FFF5F8 !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
+        min-height: 100% !important;
         height: auto !important;
         overflow: visible !important;
       }
 
       body {
-        padding: 8mm 10mm !important;
+        padding: 6mm 8mm !important;
         box-sizing: border-box !important;
       }
 
@@ -1250,17 +1261,23 @@
       .footer,
       .toast,
       .frame-actions,
-      .frame.empty {
+      .frame.empty,
+      .admin-trigger,
+      .admin-backdrop,
+      .image-editor-backdrop,
+      .social-label-link,
+      .titulo {
         display: none !important;
       }
 
       .header {
         position: static !important;
-        background: #FFFFFF !important;
-        box-shadow: none !important;
-        border-bottom: 0.5mm solid #F8BBD0 !important;
-        padding: 0 0 3mm !important;
-        margin-bottom: 4mm !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 0.4mm solid #F8BBD0 !important;
+        border-radius: 3.5mm !important;
+        box-shadow: 0 1mm 2.5mm rgba(244, 143, 177, 0.12) !important;
+        padding: 2mm 3.5mm !important;
+        margin-bottom: 3.5mm !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
       }
@@ -1268,11 +1285,12 @@
       .header-inner {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
         min-height: auto !important;
-        gap: 3mm !important;
+        gap: 2mm !important;
       }
 
       .logo-area {
@@ -1284,14 +1302,15 @@
       }
 
       .logo-placeholder {
-        width: 26mm !important;
-        height: 26mm !important;
+        width: 22mm !important;
+        height: 22mm !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        padding: 0 !important;
       }
 
       .logo-placeholder img {
@@ -1300,36 +1319,33 @@
         object-fit: contain !important;
       }
 
-      .titulo {
-        display: none !important;
-      }
-
       .print-title-badge {
-        flex: 1 1 auto !important;
+        flex: 0 0 auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 2mm !important;
-        padding: 2.2mm 4.5mm !important;
-        background: #FFF5F8 !important;
+        gap: 1.5mm !important;
+        padding: 1.6mm 3.5mm !important;
+        background: linear-gradient(135deg, #FFF5F8 0%, #FFEBF2 100%) !important;
         border: 0.4mm solid #F48FB1 !important;
-        border-radius: 4mm !important;
-        margin: 0 2mm !important;
+        border-radius: 3mm !important;
+        box-shadow: 0 0.8mm 2mm rgba(244, 143, 177, 0.18) !important;
+        margin: 0 !important;
       }
 
       .print-title-text {
         font-family: 'Fredoka', 'Nunito', sans-serif !important;
-        font-size: 12.5pt !important;
+        font-size: 11pt !important;
         font-weight: 700 !important;
         color: #9C2756 !important;
-        letter-spacing: 0.4px !important;
+        letter-spacing: 0.3px !important;
         text-transform: uppercase !important;
         white-space: nowrap !important;
       }
 
       .print-sparkle {
         color: #E91E63 !important;
-        font-size: 11pt !important;
+        font-size: 10.5pt !important;
         line-height: 1 !important;
       }
 
@@ -1337,27 +1353,27 @@
         flex: 0 0 auto !important;
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
         justify-content: flex-end !important;
         align-items: center !important;
-        gap: 1.5mm 2mm !important;
-        max-width: 76mm !important;
+        gap: 1.8mm !important;
+        max-width: none !important;
       }
 
       .print-site-badge {
         display: inline-flex !important;
-        width: 100% !important;
-        justify-content: flex-end !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
         align-items: center !important;
         gap: 1mm !important;
         font-family: 'Fredoka', 'Nunito', sans-serif !important;
-        font-size: 7.5pt !important;
+        font-size: 6.5pt !important;
         font-weight: 700 !important;
-        color: #7A3651 !important;
+        color: #8D3154 !important;
         background: #FFF0F5 !important;
         border: 0.3mm solid #F8BBD0 !important;
         border-radius: 2mm !important;
-        padding: 0.6mm 2mm !important;
+        padding: 1.2mm 2.2mm !important;
         text-decoration: none !important;
         white-space: nowrap !important;
       }
@@ -1366,19 +1382,12 @@
         color: #C2185B !important;
       }
 
-      .social-label-link {
-        display: none !important;
-      }
-
       .instagram-box,
       .tiktok-box {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-      }
-
-      #adminButton {
-        display: none !important;
+        flex: 0 0 auto !important;
       }
 
       .social-qr-link {
@@ -1386,21 +1395,22 @@
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.4mm !important;
-        width: 17mm !important;
+        gap: 0.3mm !important;
+        width: 14mm !important;
         height: auto !important;
-        padding: 0.8mm !important;
-        border: 0.3mm solid #D9C5CD !important;
+        padding: 0.6mm !important;
+        border: 0.3mm solid #F48FB1 !important;
         border-radius: 1.8mm !important;
-        box-shadow: none !important;
-        background: #fff !important;
+        box-shadow: 0 0.5mm 1.5mm rgba(244, 143, 177, 0.15) !important;
+        background: #FFFFFF !important;
         text-decoration: none !important;
+        flex: 0 0 auto !important;
       }
 
       .social-qr {
         display: block !important;
-        width: 14.5mm !important;
-        height: 14.5mm !important;
+        width: 12mm !important;
+        height: 12mm !important;
         object-fit: contain !important;
       }
 
@@ -1408,13 +1418,14 @@
         display: block !important;
         color: #7A3651 !important;
         font-family: 'Nunito', sans-serif !important;
-        font-size: 5pt !important;
+        font-size: 4.8pt !important;
         font-weight: 700 !important;
         line-height: 1.1 !important;
-        max-width: 16mm !important;
+        max-width: 13.5mm !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
+        text-align: center !important;
       }
 
       #qrPrintBox {
@@ -1422,7 +1433,8 @@
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.4mm !important;
+        gap: 0.3mm !important;
+        flex: 0 0 auto !important;
       }
 
       #qrPrintBox:not(.has-pix) {
@@ -1431,39 +1443,31 @@
 
       .pix-label {
         font-family: 'Fredoka', 'Nunito', sans-serif !important;
-        font-size: 6pt !important;
+        font-size: 5pt !important;
         font-weight: 700 !important;
         color: #7A3651 !important;
         line-height: 1 !important;
       }
 
       .pix-print-frame {
-        width: 17mm !important;
-        height: 17mm !important;
-        padding: 0.8mm !important;
-        border: 0.3mm solid #D9C5CD !important;
+        width: 14mm !important;
+        height: 14mm !important;
+        padding: 0.6mm !important;
+        border: 0.3mm solid #F48FB1 !important;
         border-radius: 1.8mm !important;
-        box-shadow: none !important;
-        background: #fff !important;
+        box-shadow: 0 0.5mm 1.5mm rgba(244, 143, 177, 0.15) !important;
+        background: #FFFFFF !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
       }
 
       #qrPrintImage {
         display: block !important;
-        width: 100% !important;
-        height: 100% !important;
+        width: 12mm !important;
+        height: 12mm !important;
         object-fit: contain !important;
-      }
-
-      .admin-trigger {
-        display: none !important;
-      }
-
-      .admin-backdrop {
-        display: none !important;
-      }
-
-      .image-editor-backdrop {
-        display: none !important;
       }
 
       .catalogo {
@@ -1476,6 +1480,8 @@
         justify-content: stretch !important;
         justify-items: stretch !important;
         page-break-inside: auto !important;
+        break-after: avoid !important;
+        page-break-after: avoid !important;
       }
 
       .frame {
@@ -1483,14 +1489,14 @@
         max-width: none !important;
         height: auto !important;
         aspect-ratio: 280 / 320 !important;
-        border: 1.2pt solid #F48FB1 !important;
-        border-radius: 2.5mm !important;
-        box-shadow: none !important;
+        background: linear-gradient(180deg, #FFFFFF 0%, #FFFCFD 100%) !important;
+        border: 1pt solid #F48FB1 !important;
+        border-radius: 3.5mm !important;
+        box-shadow: 0 1mm 2.5mm rgba(236, 64, 122, 0.1) !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         animation: none !important;
         transform: none !important;
-        background: #fff !important;
         overflow: hidden !important;
       }
 
@@ -1499,18 +1505,14 @@
         height: 100% !important;
         position: relative !important;
         overflow: hidden !important;
-        background: #fff !important;
+        background: #FFFFFF !important;
+        border-radius: 3.2mm !important;
       }
 
       .frame-content img {
         position: absolute !important;
         max-width: none !important;
         transform-origin: center center !important;
-      }
-
-      /* Evita quebra estranha no final da página */
-      .catalogo {
-        page-break-inside: auto;
       }
     }
 
@@ -1790,7 +1792,7 @@
           <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" aria-hidden="true">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
           </svg>
-          <span>https://lanna-arts.pages.dev/</span>
+          <span>lanna-arts.pages.dev</span>
         </a>
         <div class="instagram-box">
           <a class="social-label-link" id="instagramProfileLink" href="https://www.instagram.com/Lanna.artees/" target="_blank" rel="noopener noreferrer">
