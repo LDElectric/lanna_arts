@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer-core');
 const path = require('path');
+const fs = require('fs');
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -11,29 +12,32 @@ const path = require('path');
   const page = await browser.newPage();
   await page.setViewport({ width: 1200, height: 900 });
 
-  console.log('Navigating to https://lanna-arts.pages.dev/ ...');
+  console.log('Navegando para https://lanna-arts.pages.dev/ ...');
   await page.goto('https://lanna-arts.pages.dev/', { waitUntil: 'networkidle0', timeout: 30000 });
 
-  // Wait for frames to render (the catalog loads via JS)
-  console.log('Waiting for catalog to load...');
   await page.waitForSelector('.frame:not(.empty)', { timeout: 15000 }).catch(() => {
-    console.log('No .frame:not(.empty) found, catalog may be empty');
+    console.log('Aguardando catálogo...');
   });
 
-  // Extra wait for images to load
-  await new Promise(r => setTimeout(r, 3000));
+  await new Promise(r => setTimeout(r, 2000));
 
-  // Add has-print-qr class so print CSS shows content
+  // Prepara estado de impressão e garante que o Pix seja visível para teste visual
   await page.evaluate(() => {
     document.body.classList.add('has-print-qr');
+    const qrPrintBox = document.getElementById('qrPrintBox');
+    const qrPrintImage = document.getElementById('qrPrintImage');
+    
+    // Se o Pix não estiver configurado no banco ainda, colocamos um QR demonstrativo para visualização
+    if (!qrPrintBox.classList.contains('has-pix') || !qrPrintImage.src) {
+      qrPrintBox.classList.add('has-pix');
+      qrPrintImage.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23fff"/><rect x="10" y="10" width="80" height="80" rx="8" fill="%239C2756"/><text x="50" y="58" fill="%23fff" font-family="sans-serif" font-weight="bold" font-size="22" text-anchor="middle">PIX</text></svg>';
+    }
 
-    // Also trigger updateRenderedTransforms if it exists
     if (typeof updateRenderedTransforms === 'function') {
       updateRenderedTransforms();
     }
   });
 
-  // Wait a bit for any re-rendering
   await new Promise(r => setTimeout(r, 1000));
 
   const outPath = path.resolve('catalogo_preview.pdf');
@@ -46,6 +50,7 @@ const path = require('path');
     displayHeaderFooter: false,
   });
 
-  console.log(`PDF generated: ${outPath}`);
+  const sizeKB = (fs.statSync(outPath).size / 1024).toFixed(1);
+  console.log(`PDF gerado: ${outPath} (${sizeKB} KB)`);
   await browser.close();
 })();
