@@ -6,8 +6,8 @@ await mkdir("dist", { recursive: true });
 const html = await readFile("index.html", "utf8");
 const app = await readFile("app.js", "utf8");
 const qrCodes = [
-  ["__QR_INSTAGRAM__", "qr-instagram-transparente.png"],
-  ["__QR_TIKTOK__", "qr-tiktok-transparente.png"]
+  ["__QR_INSTAGRAM__", "qr-instagram-opt.png"],
+  ["__QR_TIKTOK__", "qr-tiktok-opt.png"]
 ];
 let selfContainedHtml = html;
 
