@@ -1,0 +1,7 @@
+name = "lanna-arts"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-10"
+
+[[kv_namespaces]]
+binding = "CATALOG_KV"
+id = "a9accb2a18ec4cfd9e8edf42daa79fd2"
