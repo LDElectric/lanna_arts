@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "deploy:check": "wrangler whoami",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name lanna-arts"
   },
   "devDependencies": {
     "@cloudflare/puppeteer": "^2.0.0",
