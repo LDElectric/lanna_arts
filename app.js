@@ -24,8 +24,11 @@ const UPLOAD_BATCH_SIZE = 8;
 const UPLOAD_BATCH_BYTES = 24 * 1024 * 1024;
 // 4 colunas x 4 linhas por página A4 (ver regras de .print-grid em index.html)
 const PRINT_FRAMES_PER_PAGE = 16;
-const PRINT_IMAGE_MAX_EDGE = 1200;
-const PRINT_IMAGE_QUALITY = 0.82;
+// Altura nominal do quadro na impressão (280px de largura); o ajuste fino
+// é feito no beforeprint com as medidas reais do layout impresso
+const PRINT_FRAME_BOX_HEIGHT = 347;
+const PRINT_IMAGE_MAX_EDGE = 1600;
+const PRINT_IMAGE_QUALITY = 0.92;
 const printImageCache = new Map();
 
 let catalog = {
@@ -337,6 +340,12 @@ async function runPrintPreparation(qrSrc, generation) {
   document.body.classList.add("has-print-qr");
 
   if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
+  if (document.fonts?.load) {
+    await Promise.all([
+      "400 16px Fredoka", "500 16px Fredoka", "600 16px Fredoka", "700 16px Fredoka",
+      "400 16px Nunito", "500 16px Nunito", "600 16px Nunito", "700 16px Nunito"
+    ].map((spec) => document.fonts.load(spec).catch(() => {})));
+  }
   const catalogImages = Array.from(catalogElement.querySelectorAll(".frame-content img"));
   for (const image of catalogImages) forceImageLoad(image);
   await Promise.all(catalogImages.map((image) => whenImageReady(image)));
@@ -419,6 +428,13 @@ async function buildPrintPages() {
   const printImages = Array.from(printPages.querySelectorAll(".frame-content img"));
   await Promise.all(printImages.map((image) => shrinkImageForPrint(image)));
   await Promise.all(printImages.map((image) => whenImageReady(image)));
+
+  for (const frame of printPages.querySelectorAll(".frame")) {
+    const picture = frame.querySelector(".frame-content img");
+    const entry = catalog.images.find((image) => String(image.id) === frame.dataset.id);
+    if (!picture || !entry) continue;
+    updatePrintFrameTransform(picture, entry, PRINT_FRAME_BOX_HEIGHT);
+  }
 }
 
 async function shrinkImageForPrint(image) {
@@ -546,6 +562,37 @@ function updateImageTransform(picture, image) {
   picture.style.left = `calc(50% + ${xRatio * 100}%)`;
   picture.style.top = `calc(50% + ${yRatio * 100}%)`;
   picture.style.transform = `translate(-50%, -50%) scale(${image.scale || 1})`;
+}
+
+// Recalcula o enquadramento para o quadro mais alto da impressão, mantendo a
+// proporção do desenho e os ajustes (zoom/posição) feitos na edição
+function updatePrintFrameTransform(picture, image, boxHeight) {
+  const boxWidth = 280;
+  if (picture.naturalWidth && picture.naturalHeight) {
+    const fitScale = Math.min(boxWidth / picture.naturalWidth, boxHeight / picture.naturalHeight);
+    const fitW = (picture.naturalWidth * fitScale) / boxWidth;
+    const fitH = (picture.naturalHeight * fitScale) / boxHeight;
+    picture.style.width = `${fitW * 100}%`;
+    picture.style.height = `${fitH * 100}%`;
+  }
+  const xRatio = (image.offsetX || 0) / 280;
+  const yRatio = (image.offsetY || 0) / 320;
+  picture.style.left = `calc(50% + ${xRatio * 100}%)`;
+  picture.style.top = `calc(50% + ${yRatio * 100}%)`;
+  picture.style.transform = `translate(-50%, -50%) scale(${image.scale || 1})`;
+}
+
+function fitPrintTransforms() {
+  if (!printPages) return;
+  for (const frame of printPages.querySelectorAll(".frame")) {
+    const content = frame.querySelector(".frame-content");
+    const picture = frame.querySelector(".frame-content img");
+    const entry = catalog.images.find((image) => String(image.id) === frame.dataset.id);
+    if (!content || !picture || !entry) continue;
+    const rect = content.getBoundingClientRect();
+    if (!rect.width || !rect.height) continue;
+    updatePrintFrameTransform(picture, entry, (280 * rect.height) / rect.width);
+  }
 }
 
 function updateZoomValue() {
@@ -947,6 +994,7 @@ window.addEventListener("beforeprint", () => {
   document.body.classList.add("has-print-qr");
   if (printReady) {
     document.body.classList.add("has-print-pages");
+    fitPrintTransforms();
   } else {
     preparePrintCatalog().catch(() => {});
   }

@@ -1331,7 +1331,7 @@
       }
 
       body {
-        padding: 6mm 8mm !important;
+        padding: 0 8mm !important;
         box-sizing: border-box !important;
       }
 
@@ -1360,7 +1360,7 @@
         background: rgba(255, 255, 255, 0.53) !important;
         border: 0.4mm solid rgba(248, 187, 208, 0.85) !important;
         border-radius: 3.5mm !important;
-        box-shadow: 0 1mm 2.5mm rgba(244, 143, 177, 0.12) !important;
+        box-shadow: none !important;
         padding: 2mm 3.5mm !important;
         margin-bottom: 3.5mm !important;
         backdrop-filter: none !important;
@@ -1414,7 +1414,7 @@
         background: rgba(255, 255, 255, 0.6) !important;
         border: 0.4mm solid rgba(244, 143, 177, 0.85) !important;
         border-radius: 3mm !important;
-        box-shadow: 0 0.8mm 2mm rgba(244, 143, 177, 0.18) !important;
+        box-shadow: none !important;
         margin: 0 !important;
       }
 
@@ -1429,6 +1429,7 @@
       }
 
       .print-sparkle {
+        display: block !important;
         color: #E91E63 !important;
         font-size: 10.5pt !important;
         line-height: 1 !important;
@@ -1479,7 +1480,7 @@
         padding: 0.6mm !important;
         border: 0.3mm solid #F48FB1 !important;
         border-radius: 1.8mm !important;
-        box-shadow: 0 0.5mm 1.5mm rgba(244, 143, 177, 0.15) !important;
+        box-shadow: none !important;
         background: #FFFFFF !important;
         text-decoration: none !important;
         flex: 0 0 auto !important;
@@ -1496,7 +1497,7 @@
         display: block !important;
         color: #7A3651 !important;
         font-family: 'Nunito', sans-serif !important;
-        font-size: 4.8pt !important;
+        font-size: 5.4pt !important;
         font-weight: 700 !important;
         line-height: 1.1 !important;
         max-width: 13.5mm !important;
@@ -1517,7 +1518,7 @@
 
       .pix-label {
         font-family: 'Fredoka', 'Nunito', sans-serif !important;
-        font-size: 5pt !important;
+        font-size: 5.4pt !important;
         font-weight: 700 !important;
         color: #7A3651 !important;
         line-height: 1 !important;
@@ -1529,7 +1530,7 @@
         padding: 0.6mm !important;
         border: 0.3mm solid #F48FB1 !important;
         border-radius: 1.8mm !important;
-        box-shadow: 0 0.5mm 1.5mm rgba(244, 143, 177, 0.15) !important;
+        box-shadow: none !important;
         background: #FFFFFF !important;
         display: flex !important;
         align-items: center !important;
@@ -1561,12 +1562,12 @@
       .frame {
         width: 100% !important;
         max-width: none !important;
-        height: auto !important;
-        aspect-ratio: 280 / 320 !important;
+        height: 100% !important;
+        min-height: 0 !important;
         background: transparent !important;
         border: 1pt solid #F48FB1 !important;
         border-radius: 3.5mm !important;
-        box-shadow: 0 0.4mm 1.2mm rgba(236, 64, 122, 0.06) !important;
+        box-shadow: none !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         animation: none !important;
@@ -1589,15 +1590,11 @@
         transform-origin: center center !important;
       }
 
-      /* Mantém o fundo decorado do site (nuvens, unicórnios, arco-íris...) */
+      /* O fundo decorado já vem achatado na imagem .print-bg; os elementos
+         vivos (emoji, nuvens...) virariam dezenas de mini-imagens por página
+         e deixariam o PDF pesado para renderizar em leitores móveis */
       .decorations {
-        display: block !important;
-        position: fixed !important;
-        inset: 0 !important;
-      }
-
-      .decorations * {
-        animation: none !important;
+        display: none !important;
       }
 
       /* Páginas de impressão montadas pelo JS (4 colunas x 4 linhas) */
@@ -1615,10 +1612,20 @@
       }
 
       .print-page {
-        min-height: 285mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
         box-sizing: border-box !important;
+        padding: 6mm 0 10mm !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
         break-after: page;
         page-break-after: always;
+      }
+
+      .print-page > .header,
+      .print-intro {
+        flex: 0 0 auto !important;
       }
 
       .print-intro {
@@ -1640,10 +1647,6 @@
         font: 500 6.5pt/1.1 'Nunito', sans-serif !important;
       }
 
-      .print-page:not(:first-child) {
-        padding-top: 6mm !important;
-      }
-
       .print-page:last-child {
         break-after: auto;
         page-break-after: auto;
@@ -1652,9 +1655,12 @@
       .print-grid {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
         gap: 4mm 3.5mm !important;
         margin: 0 !important;
         padding: 0 !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
       }
 
       body.has-print-pages .catalogo {
@@ -1977,9 +1983,9 @@
         <h1 id="tituloDisplay">Catálogo de Desenhos</h1>
       </div>
       <div class="print-title-badge" aria-hidden="true">
-        <span class="print-sparkle">✨</span>
+        <svg class="print-sparkle" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 0l2.4 9.6L24 12l-9.6 2.4L12 24l-2.4-9.6L0 12l9.6-2.4z"/></svg>
         <span class="print-title-text">Escolha seu Desenho</span>
-        <span class="print-sparkle">✨</span>
+        <svg class="print-sparkle" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 0l2.4 9.6L24 12l-9.6 2.4L12 24l-2.4-9.6L0 12l9.6-2.4z"/></svg>
       </div>
 
       <!-- Redes sociais + QR -->
