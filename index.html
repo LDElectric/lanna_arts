@@ -782,20 +782,7 @@
       cursor: zoom-in;
     }
 
-    .frame-caption {
-      position: absolute;
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
-      z-index: 2;
-      padding: 5px 8px;
-      border-radius: 9px;
-      background: rgba(255,255,255,.86);
-      color: #8E2855;
-      font: 700 11px 'Nunito', sans-serif;
-      text-align: center;
-      pointer-events: none;
-    }
+    .print-intro { display: none; }
 
     .frame-content img {
       position: absolute;
@@ -1634,6 +1621,25 @@
         page-break-after: always;
       }
 
+      .print-intro {
+        display: block !important;
+        margin: 1.2mm 0 2.8mm !important;
+        padding: 0 !important;
+        text-align: center !important;
+      }
+
+      .print-intro h2 {
+        margin: 0 0 0.7mm !important;
+        color: #9C2756 !important;
+        font: 700 10.5pt/1.05 'Fredoka', 'Nunito', sans-serif !important;
+      }
+
+      .print-intro p {
+        margin: 0 !important;
+        color: #7A3651 !important;
+        font: 500 6.5pt/1.1 'Nunito', sans-serif !important;
+      }
+
       .print-page:not(:first-child) {
         padding-top: 6mm !important;
       }
@@ -2023,8 +2029,8 @@
     <button class="btn btn-primary" id="btnAdd" hidden title="Você pode selecionar várias imagens de uma vez">
       <span style="font-size:20px;line-height:1">+</span> Adicionar desenhos
     </button>
-    <button class="btn btn-print" id="btnExportPdf" title="Baixa o catálogo em PDF para imprimir depois" hidden>
-      <span style="font-size:16px;line-height:1">PDF</span> Exportar catálogo em PDF
+    <button class="btn btn-print" id="btnExportPdf" title="Abre a impressão nativa para salvar em PDF" hidden>
+      <span style="font-size:16px;line-height:1">PDF</span> Imprimir / salvar catálogo
     </button>
   </div>
 
@@ -2131,9 +2137,9 @@
         <section class="admin-tool-section export-section">
           <div class="admin-section-head"><div><h3>Exportar catálogo</h3><p class="admin-hint">Os QR Codes do Instagram, TikTok e Pix aparecem automaticamente no PDF.</p></div></div>
           <div class="export-actions">
-            <button class="btn btn-print" id="exportAllButton" type="button">PDF completo</button>
-            <button class="btn btn-secondary" id="exportCategoryButton" type="button">PDF da categoria</button>
-            <button class="btn btn-secondary" id="exportSelectedButton" type="button">PDF personalizado</button>
+            <button class="btn btn-print" id="exportAllButton" type="button">Imprimir catálogo completo</button>
+            <button class="btn btn-secondary" id="exportCategoryButton" type="button">Imprimir categoria</button>
+            <button class="btn btn-secondary" id="exportSelectedButton" type="button">Imprimir seleção</button>
           </div>
         </section>
         <p class="admin-hint">Envie PNG, JPG ou WebP de até 8 MB por imagem. Clique em um desenho para ajustar o enquadramento.</p>

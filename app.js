@@ -50,6 +50,9 @@ let uploading = false;
 let publicCategoryId = "all";
 let adminCategoryId = "all";
 let selectedExportIds = new Set();
+let printBackup = null;
+let activePrintButton = null;
+let activePrintButtonContent = "";
 
 async function api(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", ...options });
@@ -206,10 +209,6 @@ function render() {
       }
     });
     content.append(picture);
-    const caption = document.createElement("div");
-    caption.className = "frame-caption";
-    caption.textContent = image.name || `Desenho ${String(catalog.images.indexOf(image) + 1).padStart(2, "0")}`;
-    content.append(caption);
     frame.append(content);
 
     if (admin) addFrameActions(frame, image);
@@ -396,6 +395,12 @@ async function buildPrintPages() {
     const page = document.createElement("section");
     page.className = "print-page";
     if (headerTemplate) page.append(headerTemplate.cloneNode(true));
+    const intro = document.createElement("section");
+    intro.className = "print-intro";
+    intro.innerHTML = `
+      <h2>Escolha seu desenho favorito</h2>
+      <p>Explore as opções da Lanna Artes e encontre a pintura ideal para o seu momento.</p>`;
+    page.append(intro);
     const grid = document.createElement("div");
     grid.className = "print-grid";
     for (const frame of frames.slice(index, index + PRINT_FRAMES_PER_PAGE)) {
@@ -888,52 +893,54 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
   }
 });
 
-async function exportCatalogPdf(options = {}, button = null) {
+async function printCatalogNative(options = {}, button = null) {
+  const selectedImages = options.mode === "category"
+    ? catalog.images.filter((image) => image.categoryId === options.categoryId)
+    : options.mode === "custom"
+      ? catalog.images.filter((image) => selectedExportIds.has(image.id))
+      : catalog.images;
+  if (selectedImages.length === 0) {
+    showToast(options.mode === "custom"
+      ? "Selecione pelo menos um desenho para imprimir."
+      : "Adicione pelo menos um desenho para imprimir.");
+    return;
+  }
+
   const buttonContent = button?.innerHTML;
-  if (button) { button.disabled = true; button.textContent = "Gerando PDF..."; }
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Preparando impressão...";
+    activePrintButton = button;
+    activePrintButtonContent = buttonContent;
+  }
+  printBackup = {
+    title: catalog.title,
+    images: catalog.images,
+    publicCategoryId
+  };
   try {
-    const response = await fetch("/api/admin/catalog.pdf", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(options)
-    });
-    if (!response.ok) {
-      const contentType = response.headers.get("Content-Type") || "";
-      const body = contentType.includes("application/json") ? await response.json() : null;
-      throw new Error(body?.error || `Falha na solicitação (${response.status}).`);
-    }
-
-    const pdf = await response.blob();
-    if (pdf.type !== "application/pdf" || pdf.size === 0) {
-      throw new Error("O servidor retornou um arquivo PDF inválido.");
-    }
-
-    const filename = response.headers.get("Content-Disposition")
-      ?.match(/filename="([^"]+)"/)?.[1] || "catalogo.pdf";
-    const downloadUrl = URL.createObjectURL(pdf);
-    const downloadLink = document.createElement("a");
-    downloadLink.href = downloadUrl;
-    downloadLink.download = filename;
-    downloadLink.click();
-    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-    showToast("Catálogo exportado em PDF.");
+    await preparePrintSelection(selectedImages.map((image) => image.id), options.title || catalog.title, null);
+    window.print();
   } catch (error) {
+    restorePrintCatalog();
     showToast(error.message);
-  } finally {
-    if (button) { button.disabled = false; button.innerHTML = buttonContent; }
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = buttonContent;
+      activePrintButton = null;
+    }
   }
 }
 
-exportPdfButton.addEventListener("click", () => exportCatalogPdf({ mode: "all" }, exportPdfButton));
-document.getElementById("exportAllButton").addEventListener("click", (event) => exportCatalogPdf({ mode: "all" }, event.currentTarget));
+exportPdfButton.addEventListener("click", () => printCatalogNative({ mode: "all" }, exportPdfButton));
+document.getElementById("exportAllButton").addEventListener("click", (event) => printCatalogNative({ mode: "all" }, event.currentTarget));
 document.getElementById("exportCategoryButton").addEventListener("click", (event) => {
   const categoryId = document.getElementById("adminCategoryFilter").value;
   if (categoryId === "all") { showToast("Escolha uma categoria específica."); return; }
-  exportCatalogPdf({ mode: "category", categoryId, title: categoryName(categoryId) }, event.currentTarget);
+  printCatalogNative({ mode: "category", categoryId, title: categoryName(categoryId) }, event.currentTarget);
 });
 document.getElementById("exportSelectedButton").addEventListener("click", (event) => {
-  exportCatalogPdf({ mode: "custom", imageIds: Array.from(selectedExportIds), title: "Seleção personalizada" }, event.currentTarget);
+  printCatalogNative({ mode: "custom", title: "Seleção personalizada" }, event.currentTarget);
 });
 
 window.addEventListener("beforeprint", () => {
@@ -949,8 +956,24 @@ window.addEventListener("beforeprint", () => {
 window.addEventListener("afterprint", () => {
   document.body.classList.remove("has-print-qr");
   document.body.classList.remove("has-print-pages");
+  restorePrintCatalog();
+  if (activePrintButton) {
+    activePrintButton.disabled = false;
+    activePrintButton.innerHTML = activePrintButtonContent;
+    activePrintButton = null;
+  }
   updateRenderedTransforms();
 });
+
+function restorePrintCatalog() {
+  if (!printBackup) return;
+  catalog.title = printBackup.title;
+  catalog.images = printBackup.images;
+  publicCategoryId = printBackup.publicCategoryId;
+  printBackup = null;
+  updateHeader();
+  render();
+}
 
 window.preparePrintSelection = async (imageIds, title, qrImage) => {
   const wanted = new Set((Array.isArray(imageIds) ? imageIds : []).map(Number));
