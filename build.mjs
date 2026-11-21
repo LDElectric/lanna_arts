@@ -5,20 +5,23 @@ await mkdir("dist", { recursive: true });
 
 const html = await readFile("index.html", "utf8");
 const app = await readFile("app.js", "utf8");
-const qrCodes = [
-  ["__QR_INSTAGRAM__", "qr-instagram-opt.png"],
-  ["__QR_TIKTOK__", "qr-tiktok-opt.png"]
+const images = [
+  ["__LOGO__", "lanna-artes-logo-web.png", "image/png"],
+  ["__QR_INSTAGRAM__", "QRcodes/qr-instagram-web.png", "image/png"],
+  ["__QR_TIKTOK__", "QRcodes/qr-tiktok-web.png", "image/png"],
+  ["__QR_PIX__", "QRcodes/QRcode_PIX_preto.svg", "image/svg+xml"],
+  ["__PRINT_BG__", "print-background.jpg", "image/jpeg"]
 ];
 let selfContainedHtml = html;
 
-for (const [placeholder, filename] of qrCodes) {
+for (const [placeholder, filename, mime] of images) {
   if (!selfContainedHtml.includes(placeholder)) {
-    throw new Error(`Missing QR image placeholder: ${placeholder}`);
+    throw new Error(`Missing image placeholder: ${placeholder}`);
   }
-  const image = await readFile(resolve("QRcodes", filename));
+  const image = await readFile(resolve(filename));
   selfContainedHtml = selfContainedHtml.replace(
     placeholder,
-    `data:image/png;base64,${image.toString("base64")}`
+    `data:${mime};base64,${image.toString("base64")}`
   );
 }
 

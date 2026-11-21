@@ -2,6 +2,9 @@ import { isAdmin } from "../../_shared/auth.js";
 import { adminCatalog, readCatalog, validateProfile, writeCatalog } from "../../_shared/catalog.js";
 import { errorResponse, isSameOrigin, json } from "../../_shared/http.js";
 
+const MAX_CATALOG_BYTES = 2 * 1024 * 1024;
+const MAX_CATALOG_IMAGES = 10000;
+
 export async function onRequest({ request, env }) {
   if (!(await isAdmin(request, env))) return json({ error: "Acesso restrito à administradora." }, 401);
   if (request.method === "GET") {
@@ -13,7 +16,7 @@ export async function onRequest({ request, env }) {
   }
   if (request.method !== "PUT") return json({ error: "Método não permitido." }, 405);
   if (!isSameOrigin(request)) return json({ error: "Origem da solicitação inválida." }, 403);
-  if (Number(request.headers.get("Content-Length") || 0) > 32_000) {
+  if (Number(request.headers.get("Content-Length") || 0) > MAX_CATALOG_BYTES) {
     return json({ error: "Os dados enviados excedem o limite permitido." }, 413);
   }
 
@@ -22,7 +25,7 @@ export async function onRequest({ request, env }) {
     if (typeof input.title !== "string" || input.title.trim().length < 1 ||
         input.title.trim().length > 80 || !validateProfile(input.instagram) ||
         (input.tiktok !== "" && !validateProfile(input.tiktok)) ||
-        !Array.isArray(input.images) || input.images.length > 500) {
+        !Array.isArray(input.images) || input.images.length > MAX_CATALOG_IMAGES) {
       return json({ error: "Confira o título, os perfis e a lista de desenhos." }, 400);
     }
 

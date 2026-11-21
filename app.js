@@ -15,6 +15,18 @@ const imageEditorTitle = document.getElementById("imageEditorTitle");
 const imageEditorHint = document.getElementById("imageEditorHint");
 const imageEditorZoom = document.getElementById("imageEditorZoom");
 const imageEditorZoomValue = document.getElementById("imageEditorZoomValue");
+const exportPdfButton = document.getElementById("btnExportPdf");
+const printPages = document.getElementById("printPages");
+const adminCount = document.getElementById("adminCount");
+const defaultPrintQrSource = qrPrintImage.getAttribute("src");
+
+const UPLOAD_BATCH_SIZE = 8;
+const UPLOAD_BATCH_BYTES = 24 * 1024 * 1024;
+// 4 colunas x 4 linhas por página A4 (ver regras de .print-grid em index.html)
+const PRINT_FRAMES_PER_PAGE = 16;
+const PRINT_IMAGE_MAX_EDGE = 1200;
+const PRINT_IMAGE_QUALITY = 0.82;
+const printImageCache = new Map();
 
 let catalog = { title: "Catálogo de Desenhos", instagram: "Lanna.artees", tiktok: "lanna.lopess", images: [] };
 let admin = false;
@@ -24,6 +36,11 @@ let imageEditorTrigger = null;
 let previousBodyOverflow = "";
 let editorPointers = new Map();
 let editorGesture = null;
+let printReady = false;
+let printGeneration = 0;
+let printPreparationTimer = null;
+let printPreparationPromise = null;
+let uploading = false;
 
 async function api(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", ...options });
@@ -61,7 +78,7 @@ function updateHeader() {
 function setAdmin(value) {
   admin = value;
   document.getElementById("btnAdd").hidden = !admin;
-  document.getElementById("btnPrint").hidden = !admin;
+  exportPdfButton.hidden = !admin;
   document.getElementById("adminTitle").textContent = admin ? "Gerenciar catálogo" : "Acesso da Lanna";
   loginForm.hidden = admin;
   adminPanel.hidden = !admin;
@@ -74,8 +91,13 @@ function setAdmin(value) {
   render();
 }
 
+function updatePrintQr() {
+  qrPrintImage.src = catalog.qr || defaultPrintQrSource;
+}
+
 async function loadCatalog() {
   catalog = await api("/api/catalog");
+  updatePrintQr();
   updateHeader();
   render();
 }
@@ -97,6 +119,7 @@ async function saveCatalog() {
 async function refreshAdminCatalog() {
   const data = await api("/api/admin/catalog");
   catalog = { ...catalog, ...data };
+  updatePrintQr();
   updateHeader();
   render();
   setAdmin(true);
@@ -119,7 +142,10 @@ function render() {
     const picture = document.createElement("img");
     picture.src = image.src;
     picture.alt = "Desenho do catálogo";
+    picture.loading = "lazy";
+    picture.decoding = "async";
     picture.addEventListener("load", () => updateImageTransform(picture, image));
+    picture.addEventListener("error", () => showToast("Não foi possível carregar este desenho. Tente enviá-lo novamente."));
     content.addEventListener("click", () => openImageEditor(image, admin));
     content.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -134,6 +160,16 @@ function render() {
     catalogElement.append(frame);
     requestAnimationFrame(() => updateImageTransform(picture, image));
   }
+  updateAdminCount();
+  invalidatePrintPages();
+}
+
+function updateAdminCount() {
+  if (!adminCount) return;
+  const count = catalog.images.length;
+  adminCount.textContent = admin && count > 0
+    ? `${count} desenho${count === 1 ? "" : "s"} no catálogo.`
+    : "";
 }
 
 function updateRenderedTransforms() {
@@ -146,6 +182,162 @@ function updateRenderedTransforms() {
 }
 
 window.addEventListener("resize", updateRenderedTransforms);
+
+function invalidatePrintPages() {
+  printGeneration++;
+  printReady = false;
+  document.body.classList.remove("has-print-pages");
+  if (printPages) printPages.replaceChildren();
+  window.clearTimeout(printPreparationTimer);
+  if (!admin || uploading) return;
+  printPreparationTimer = window.setTimeout(() => {
+    preparePrintCatalog().catch(() => {});
+  }, 700);
+}
+
+async function preparePrintCatalog(qrSrc = null) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const generation = printGeneration;
+    if (!printPreparationPromise) {
+      printPreparationPromise = runPrintPreparation(qrSrc, generation).finally(() => {
+        printPreparationPromise = null;
+      });
+    }
+    await printPreparationPromise;
+    if (generation === printGeneration) return;
+  }
+}
+
+async function runPrintPreparation(qrSrc, generation) {
+  if (qrSrc) qrPrintImage.src = qrSrc;
+  await whenImageReady(qrPrintImage);
+  document.body.classList.add("has-print-qr");
+
+  if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
+  const catalogImages = Array.from(catalogElement.querySelectorAll(".frame-content img"));
+  for (const image of catalogImages) forceImageLoad(image);
+  await Promise.all(catalogImages.map((image) => whenImageReady(image)));
+  updateRenderedTransforms();
+  await buildPrintPages();
+  if (generation !== printGeneration) return;
+  document.body.classList.add("has-print-pages");
+  printReady = true;
+  updateRenderedTransforms();
+}
+
+function forceImageLoad(image) {
+  if (image.complete && image.naturalWidth > 0) return;
+  image.loading = "eager";
+  const source = image.getAttribute("src");
+  if (source) image.src = source;
+}
+
+function whenImageReady(image, timeout = 15000) {
+  if (image.complete) return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      window.clearTimeout(timer);
+      image.removeEventListener("load", done);
+      image.removeEventListener("error", done);
+      resolve();
+    };
+    const timer = window.setTimeout(done, timeout);
+    image.addEventListener("load", done);
+    image.addEventListener("error", done);
+  });
+}
+
+function loadImageSource(source) {
+  return new Promise((resolve, reject) => {
+    const loader = new Image();
+    loader.decoding = "async";
+    loader.addEventListener("load", () => resolve(loader), { once: true });
+    loader.addEventListener("error", () => reject(new Error("Falha ao carregar imagem.")), { once: true });
+    loader.src = source;
+  });
+}
+
+async function buildPrintPages() {
+  if (!printPages) return;
+  updateRenderedTransforms();
+  const header = document.querySelector("body > .header");
+  let headerTemplate = null;
+  if (header) {
+    headerTemplate = header.cloneNode(true);
+    for (const element of headerTemplate.querySelectorAll("[id]")) element.removeAttribute("id");
+  }
+  const frames = Array.from(catalogElement.querySelectorAll(".frame"));
+  const pages = [];
+  for (let index = 0; index < frames.length; index += PRINT_FRAMES_PER_PAGE) {
+    const page = document.createElement("section");
+    page.className = "print-page";
+    if (headerTemplate) page.append(headerTemplate.cloneNode(true));
+    const grid = document.createElement("div");
+    grid.className = "print-grid";
+    for (const frame of frames.slice(index, index + PRINT_FRAMES_PER_PAGE)) {
+      const clone = frame.cloneNode(true);
+      for (const image of clone.querySelectorAll("img")) {
+        image.loading = "eager";
+        image.decoding = "async";
+      }
+      grid.append(clone);
+    }
+    page.append(grid);
+    pages.push(page);
+  }
+  printPages.replaceChildren(...pages);
+
+  const printImages = Array.from(printPages.querySelectorAll(".frame-content img"));
+  await Promise.all(printImages.map((image) => shrinkImageForPrint(image)));
+  await Promise.all(printImages.map((image) => whenImageReady(image)));
+}
+
+async function shrinkImageForPrint(image) {
+  const source = image.getAttribute("src");
+  if (!source) return;
+  const cached = printImageCache.get(source);
+  if (cached) {
+    if (cached !== source) image.src = cached;
+    return;
+  }
+
+  let loader;
+  try {
+    loader = await loadImageSource(source);
+  } catch {
+    return;
+  }
+  const width = loader.naturalWidth;
+  const height = loader.naturalHeight;
+  if (!width || !height) return;
+  const longest = Math.max(width, height);
+  if (longest <= PRINT_IMAGE_MAX_EDGE) {
+    printImageCache.set(source, source);
+    return;
+  }
+
+  const ratio = PRINT_IMAGE_MAX_EDGE / longest;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width * ratio));
+  canvas.height = Math.max(1, Math.round(height * ratio));
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.fillStyle = "#FFFFFF";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(loader, 0, 0, canvas.width, canvas.height);
+
+  let dataUrl;
+  try {
+    dataUrl = canvas.toDataURL("image/jpeg", PRINT_IMAGE_QUALITY);
+  } catch {
+    return;
+  }
+  if (printImageCache.size > 500) printImageCache.clear();
+  printImageCache.set(source, dataUrl);
+  image.src = dataUrl;
+}
 
 function addFrameActions(frame, image) {
   const actions = document.createElement("div");
@@ -384,38 +576,90 @@ function chooseDrawing(id = null) {
   input.type = "file";
   input.accept = "image/png,image/jpeg,image/webp";
   input.multiple = id === null;
-  input.addEventListener("change", async () => {
+  input.style.position = "fixed";
+  input.style.left = "-10000px";
+  input.addEventListener("change", () => {
     const files = Array.from(input.files || []);
-    for (const file of files) {
-      const imageId = id ?? Math.max(0, ...catalog.images.map((image) => image.id)) + 1;
-      try {
-        await uploadImage(file, "drawing", imageId);
-      } catch (error) {
-        showToast(error.message);
-        return;
-      }
-      id = null;
-    }
+    input.remove();
+    if (files.length > 0) addDrawings(files, id);
   });
+  input.addEventListener("cancel", () => input.remove(), { once: true });
+  document.body.append(input);
   input.click();
 }
 
-async function uploadImage(file, kind, id) {
+function drawingBatches(files) {
+  const batches = [];
+  let batch = [];
+  let batchBytes = 0;
+  for (const file of files) {
+    if (batch.length >= UPLOAD_BATCH_SIZE || (batch.length > 0 && batchBytes + file.size > UPLOAD_BATCH_BYTES)) {
+      batches.push(batch);
+      batch = [];
+      batchBytes = 0;
+    }
+    batch.push(file);
+    batchBytes += file.size;
+  }
+  if (batch.length > 0) batches.push(batch);
+  return batches;
+}
+
+async function uploadDrawingBatch(files, replaceId = null) {
+  const form = new FormData();
+  form.set("kind", "drawing");
+  if (replaceId !== null) form.set("id", String(replaceId));
+  for (const file of files) form.append("files", file, file.name);
+  const result = await api("/api/admin/images", { method: "POST", body: form });
+  return result.images || [];
+}
+
+async function addDrawings(files, replaceId = null) {
+  if (uploading) {
+    showToast("Aguarde o envio atual terminar.");
+    return;
+  }
+  const total = files.length;
+  const batches = drawingBatches(files);
+  uploading = true;
+  try {
+    let sent = 0;
+    for (const batch of batches) {
+      showToast(total > 1
+        ? `Enviando ${sent + 1} a ${sent + batch.length} de ${total} imagens...`
+        : "Enviando imagem...");
+      const added = await uploadDrawingBatch(batch, replaceId);
+      for (const item of added) {
+        const existing = catalog.images.find((image) => image.id === item.id);
+        if (existing) {
+          Object.assign(existing, { key: item.key, src: item.src, scale: 1, offsetX: 0, offsetY: 0 });
+        } else {
+          catalog.images.push({ id: item.id, key: item.key, src: item.src, scale: 1, offsetX: 0, offsetY: 0 });
+        }
+      }
+      replaceId = null;
+      sent += batch.length;
+    }
+    render();
+    showToast(total > 1 ? `${total} imagens adicionadas.` : "Imagem adicionada.");
+  } catch (error) {
+    showToast(error.message);
+    await refreshAdminCatalog().catch(() => {});
+  } finally {
+    uploading = false;
+    invalidatePrintPages();
+  }
+}
+
+async function uploadQrImage(file) {
   const form = new FormData();
   form.set("file", file);
-  form.set("kind", kind);
-  if (id !== undefined) form.set("id", String(id));
+  form.set("kind", "qr");
   const result = await api("/api/admin/images", { method: "POST", body: form });
-  if (kind === "drawing") {
-    const existing = catalog.images.find((image) => image.id === id);
-    if (existing) Object.assign(existing, { key: result.key, src: result.src, scale: 1, offsetX: 0, offsetY: 0 });
-    else catalog.images.push({ id, key: result.key, src: result.src, scale: 1, offsetX: 0, offsetY: 0 });
-    render();
-    showToast("Desenho enviado.");
-  } else {
-    catalog.qr = result.src;
-    showToast("QR de impressão atualizado.");
-  }
+  catalog.qr = result.qr || result.src;
+  updatePrintQr();
+  invalidatePrintPages();
+  showToast("QR de impressão atualizado.");
 }
 
 document.getElementById("adminButton").addEventListener("click", async () => {
@@ -476,7 +720,7 @@ qrUpload.addEventListener("change", async () => {
   const file = qrUpload.files?.[0];
   if (!file) return;
   try {
-    await uploadImage(file, "qr");
+    await uploadQrImage(file);
   } catch (error) {
     adminStatus.textContent = error.message;
   } finally {
@@ -496,38 +740,62 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("btnPrint").addEventListener("click", async () => {
+exportPdfButton.addEventListener("click", async () => {
   if (catalog.images.length === 0) {
-    showToast("Adicione pelo menos um desenho para imprimir.");
+    showToast("Adicione pelo menos um desenho para exportar.");
     return;
   }
+
+  const buttonContent = exportPdfButton.innerHTML;
+  exportPdfButton.disabled = true;
+  exportPdfButton.textContent = "Gerando PDF...";
+
   try {
-    const data = await api("/api/admin/catalog");
-    if (data.qr) {
-      qrPrintImage.src = data.qr;
-      qrPrintBox.classList.add("has-pix");
-      await qrPrintImage.decode();
-    } else {
-      qrPrintImage.removeAttribute("src");
-      qrPrintBox.classList.remove("has-pix");
+    const response = await fetch("/api/admin/catalog.pdf", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+    if (!response.ok) {
+      const contentType = response.headers.get("Content-Type") || "";
+      const body = contentType.includes("application/json") ? await response.json() : null;
+      throw new Error(body?.error || `Falha na solicitação (${response.status}).`);
     }
-    updateRenderedTransforms();
-    document.body.classList.add("has-print-qr");
-    window.print();
+
+    const pdf = await response.blob();
+    if (pdf.type !== "application/pdf" || pdf.size === 0) {
+      throw new Error("O servidor retornou um arquivo PDF inválido.");
+    }
+
+    const filename = response.headers.get("Content-Disposition")
+      ?.match(/filename="([^"]+)"/)?.[1] || "catalogo.pdf";
+    const downloadUrl = URL.createObjectURL(pdf);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = filename;
+    downloadLink.click();
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    showToast("Catálogo exportado em PDF.");
   } catch (error) {
     showToast(error.message);
+  } finally {
+    exportPdfButton.disabled = false;
+    exportPdfButton.innerHTML = buttonContent;
   }
 });
 
 window.addEventListener("beforeprint", () => {
   document.body.classList.add("has-print-qr");
+  if (printReady) {
+    document.body.classList.add("has-print-pages");
+  } else {
+    preparePrintCatalog().catch(() => {});
+  }
   updateRenderedTransforms();
 });
 
 window.addEventListener("afterprint", () => {
   document.body.classList.remove("has-print-qr");
-  qrPrintImage.removeAttribute("src");
-  qrPrintBox.classList.remove("has-pix");
+  document.body.classList.remove("has-print-pages");
   updateRenderedTransforms();
 });
 

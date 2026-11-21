@@ -11,7 +11,7 @@ export const DEFAULT_CATALOG = {
 export async function readCatalog(env) {
   if (!env.CATALOG_KV) throw new Error("O namespace KV CATALOG_KV não está configurado.");
   const value = await env.CATALOG_KV.get("catalog", "text");
-  if (!value) return { ...DEFAULT_CATALOG };
+  if (!value) return { ...DEFAULT_CATALOG, images: [] };
   try {
     const catalog = JSON.parse(value);
     return {
@@ -28,9 +28,28 @@ export async function readCatalog(env) {
   }
 }
 
+async function sleep(milliseconds) {
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function isWriteThrottled(error) {
+  const message = String(error?.message ?? error ?? "");
+  return /429|too many requests|rate limit|throttl/i.test(message);
+}
+
 export async function writeCatalog(env, catalog) {
   if (!env.CATALOG_KV) throw new Error("O namespace KV CATALOG_KV não está configurado.");
-  await env.CATALOG_KV.put("catalog", JSON.stringify(catalog));
+  const value = JSON.stringify(catalog);
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await env.CATALOG_KV.put("catalog", value);
+      return;
+    } catch (error) {
+      // O KV aceita apenas 1 gravação por segundo na mesma chave.
+      if (attempt >= 3 || !isWriteThrottled(error)) throw error;
+      await sleep(1000 * attempt);
+    }
+  }
 }
 
 export function publicCatalog(catalog) {
@@ -38,6 +57,7 @@ export function publicCatalog(catalog) {
     title: catalog.title,
     instagram: catalog.instagram,
     tiktok: catalog.tiktok,
+    qr: catalog.qrKey ? "/api/qr" : null,
     images: catalog.images.map((image) => ({
       id: image.id,
       src: `/api/images/${encodeURIComponent(image.key)}`,
