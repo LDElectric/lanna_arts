@@ -106,6 +106,8 @@ function renderCategoryControls() {
 function updateHeader() {
   document.getElementById("tituloDisplay").textContent = catalog.title;
   document.title = catalog.title;
+  const printTitle = document.querySelector(".print-title-text");
+  if (printTitle) printTitle.textContent = catalog.title;
   const instagramUrl = `https://www.instagram.com/${encodeURIComponent(catalog.instagram)}/`;
   document.getElementById("instagramQrLink").href = instagramUrl;
   document.getElementById("instagramQrLink").ariaLabel = `QR Code do Instagram @${catalog.instagram}`;
@@ -928,10 +930,10 @@ document.getElementById("exportAllButton").addEventListener("click", (event) => 
 document.getElementById("exportCategoryButton").addEventListener("click", (event) => {
   const categoryId = document.getElementById("adminCategoryFilter").value;
   if (categoryId === "all") { showToast("Escolha uma categoria específica."); return; }
-  exportCatalogPdf({ mode: "category", categoryId, title: `${catalog.title} - ${categoryName(categoryId)}` }, event.currentTarget);
+  exportCatalogPdf({ mode: "category", categoryId, title: categoryName(categoryId) }, event.currentTarget);
 });
 document.getElementById("exportSelectedButton").addEventListener("click", (event) => {
-  exportCatalogPdf({ mode: "custom", imageIds: Array.from(selectedExportIds), title: `${catalog.title} - seleção personalizada` }, event.currentTarget);
+  exportCatalogPdf({ mode: "custom", imageIds: Array.from(selectedExportIds), title: "Seleção personalizada" }, event.currentTarget);
 });
 
 window.addEventListener("beforeprint", () => {
