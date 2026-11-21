@@ -50,10 +50,30 @@ export async function onRequestPost({ request, env }) {
   let browser;
   try {
     const catalog = await readCatalog(env);
-    if (catalog.images.length === 0) {
+    let selection = null;
+    if (request.headers.get("Content-Type")?.includes("application/json")) {
+      selection = await request.json();
+    }
+    let selectedImages = catalog.images;
+    if (selection?.mode === "category") {
+      if (typeof selection.categoryId !== "string") return json({ error: "Escolha uma categoria." }, 400);
+      selectedImages = catalog.images.filter((image) => image.categoryId === selection.categoryId);
+    } else if (selection?.mode === "custom") {
+      if (!Array.isArray(selection.imageIds) || selection.imageIds.length === 0) {
+        return json({ error: "Selecione pelo menos um desenho." }, 400);
+      }
+      const wanted = new Set(selection.imageIds.filter((id) => Number.isSafeInteger(id)));
+      selectedImages = catalog.images.filter((image) => wanted.has(image.id));
+    }
+    if (selectedImages.length === 0) {
       return json({ error: "Adicione pelo menos um desenho para exportar." }, 400);
     }
-    const qrDataUrl = await printQrDataUrl(catalog, env);
+    const exportCatalog = {
+      ...catalog,
+      title: typeof selection?.title === "string" && selection.title.trim() ? selection.title.trim().slice(0, 80) : catalog.title,
+      images: selectedImages
+    };
+    const qrDataUrl = await printQrDataUrl(exportCatalog, env);
     browser = await puppeteer.launch(env.BROWSER);
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 900 });
@@ -61,15 +81,19 @@ export async function onRequestPost({ request, env }) {
       waitUntil: "networkidle0",
       timeout: 45_000
     });
-    await page.evaluate(async (qrImage) => {
+    await page.evaluate(async ({ qrImage, imageIds, title }) => {
       if (typeof preparePrintCatalog !== "function") {
         throw new Error("O catálogo não terminou de carregar.");
       }
-      await preparePrintCatalog(qrImage);
+      if (typeof preparePrintSelection === "function") {
+        await preparePrintSelection(imageIds, title, qrImage);
+      } else {
+        await preparePrintCatalog(qrImage);
+      }
       if (!document.querySelector("#printPages .frame")) {
         throw new Error("Os desenhos do catálogo não foram carregados.");
       }
-    }, qrDataUrl);
+    }, { qrImage: qrDataUrl, imageIds: selectedImages.map((image) => image.id), title: exportCatalog.title });
 
     const pdf = await page.pdf({
       format: "A4",
@@ -80,7 +104,7 @@ export async function onRequestPost({ request, env }) {
     return new Response(pdf, {
       headers: {
         "Cache-Control": "no-store",
-        "Content-Disposition": `attachment; filename="${filename(catalog.title)}"`,
+        "Content-Disposition": `attachment; filename="${filename(exportCatalog.title)}"`,
         "Content-Type": "application/pdf",
         "X-Content-Type-Options": "nosniff"
       }

@@ -441,7 +441,23 @@
     }
 
     .social-qr-link {
-      display: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      padding: 3px;
+      border: 1px solid rgba(244, 143, 177, .55);
+      border-radius: 9px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(100, 54, 68, .08);
+    }
+
+    .social-qr {
+      display: block;
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
     }
 
     .social-label-link:focus-visible {
@@ -621,6 +637,58 @@
       justify-content: center;
     }
 
+    .public-intro {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 26px auto 8px;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .public-intro .eyebrow,
+    .admin-kicker {
+      color: #B82E66;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .public-intro h2 {
+      margin: 5px 0 4px;
+      color: #8E2855;
+      font: 700 clamp(1.35rem, 3vw, 2rem) 'Fredoka', sans-serif;
+    }
+
+    .public-intro p:last-child { color: #765267; font-size: 14px; }
+
+    .category-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 1080px;
+      margin: 16px auto 8px;
+      padding: 0 20px;
+    }
+
+    .category-chip {
+      border: 1px solid rgba(244, 143, 177, .62);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,.74);
+      color: #8D3154;
+      font: 600 13px 'Nunito', sans-serif;
+      cursor: pointer;
+    }
+
+    .category-chip.active,
+    .category-chip:hover { background: #F48FB1; border-color: #F48FB1; color: #fff; }
+
     /* Páginas montadas apenas para impressão/PDF */
     .print-pages {
       display: none;
@@ -712,6 +780,21 @@
       overflow: hidden;
       background: transparent;
       cursor: zoom-in;
+    }
+
+    .frame-caption {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      z-index: 2;
+      padding: 5px 8px;
+      border-radius: 9px;
+      background: rgba(255,255,255,.86);
+      color: #8E2855;
+      font: 700 11px 'Nunito', sans-serif;
+      text-align: center;
+      pointer-events: none;
     }
 
     .frame-content img {
@@ -1593,7 +1676,7 @@
     }
 
     .admin-card {
-      width: min(100%, 440px);
+      width: min(100%, 1080px);
       max-height: min(90vh, 760px);
       overflow: auto;
       padding: 24px;
@@ -1602,6 +1685,32 @@
       background: #fff;
       box-shadow: 0 20px 60px rgba(86, 35, 57, 0.24);
     }
+
+    .admin-dashboard-head,
+    .admin-section-head,
+    .admin-library-toolbar,
+    .export-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .admin-dashboard-head h3, .admin-section-head h3 { margin: 3px 0 0; color: #7A3651; font: 700 1.15rem 'Fredoka', sans-serif; }
+    .admin-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 18px 0; }
+    .admin-summary-item { padding: 13px 15px; border: 1px solid #F2D7E2; border-radius: 14px; background: #FFF8FA; color: #7A3651; }
+    .admin-summary-item strong { display: block; font: 700 1.35rem 'Fredoka', sans-serif; color: #B82E66; }
+    .admin-settings-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; padding: 16px; border: 1px solid #F2D7E2; border-radius: 16px; background: #FFFBFC; }
+    .admin-settings-actions { align-self: end; margin: 0; }
+    .admin-tool-section { margin-top: 18px; padding: 16px; border: 1px solid #F2D7E2; border-radius: 16px; background: #fff; }
+    .admin-library-toolbar { justify-content: flex-start; margin: 14px 0; }
+    .admin-library-toolbar label { display: flex; align-items: center; gap: 7px; margin: 0; }
+    .admin-library-toolbar select { padding: 9px 12px; border: 1px solid #E8B7C7; border-radius: 10px; font: inherit; color: #63354D; background: #fff; }
+    .admin-select-all { font-weight: 700; color: #7A3651; }
+    .admin-library { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; max-height: 330px; overflow: auto; padding: 2px; }
+    .admin-library-item { position: relative; overflow: hidden; border: 1px solid #F2C5D5; border-radius: 12px; background: #FFF8FA; }
+    .admin-library-item img { display: block; width: 100%; aspect-ratio: 1 / 1.12; object-fit: cover; }
+    .admin-library-item label { display: flex; align-items: center; gap: 6px; padding: 8px; color: #7A3651; font-size: 11px; font-weight: 700; }
+    .admin-library-item input { accent-color: #EC407A; }
+    .admin-library-item .admin-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .admin-item-meta { display: grid; gap: 6px; padding: 0 8px 8px; }
+    .admin-item-meta input, .admin-item-meta select { width: 100%; min-width: 0; padding: 6px 7px; border: 1px solid #E8B7C7; border-radius: 7px; background: #fff; color: #63354D; font: 11px 'Nunito', sans-serif; }
+    .export-section { background: linear-gradient(135deg, #FFF8FA, #FFF0F5); }
+    .export-actions { justify-content: flex-start; margin-top: 12px; }
 
     .admin-card h2 {
       margin: 0 0 18px;
@@ -1659,6 +1768,20 @@
     }
 
     @media (max-width: 640px) {
+      .public-intro { margin-top: 18px; }
+      .public-intro p:last-child { font-size: 13px; }
+      .category-bar { padding: 0 10px; }
+      .category-chip { padding: 7px 11px; font-size: 12px; }
+      .social-qr-link { width: 34px; height: 34px; }
+      .social-qr { width: 27px; height: 27px; }
+      .admin-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+      .admin-summary-item { padding: 9px; font-size: 11px; }
+      .admin-summary-item strong { font-size: 1.1rem; }
+      .admin-settings-grid { grid-template-columns: 1fr; }
+      .admin-library-toolbar { align-items: stretch; }
+      .admin-library-toolbar label { width: 100%; }
+      .admin-library-toolbar select, .admin-library-toolbar input { flex: 1; min-width: 0; }
+      .export-actions .btn { flex: 1 1 100%; justify-content: center; }
       .image-editor-backdrop {
         padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
           max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
@@ -1901,6 +2024,13 @@
     </button>
   </div>
 
+  <section class="public-intro" aria-labelledby="catalogIntroTitle">
+    <p class="eyebrow">Pintura facial para festas e eventos</p>
+    <h2 id="catalogIntroTitle">Escolha seu desenho favorito</h2>
+    <p>Explore as opções da Lanna Artes e encontre a pintura ideal para o seu momento.</p>
+  </section>
+  <nav class="category-bar" id="publicCategoryBar" aria-label="Filtrar desenhos"></nav>
+
   <!-- CATÁLOGO -->
   <main class="catalogo" id="catalogo">
     <!-- frames gerados via JS -->
@@ -1910,7 +2040,7 @@
   <div class="print-pages" id="printPages" aria-hidden="true"></div>
 
   <div class="footer">
-    Siga os perfis oficiais pelas redes sociais ou acesse a área da Lanna para administrar o catálogo.
+    Acompanhe mais trabalhos no Instagram e no TikTok.
   </div>
   <div class="toast" id="toast"></div>
 
@@ -1959,22 +2089,50 @@
         </div>
       </form>
       <form id="adminPanel" hidden>
-        <label>Título do catálogo
-          <input name="title" maxlength="80" required>
-        </label>
-        <label>Instagram (usuário)
-          <input name="instagram" maxlength="30" pattern="[A-Za-z0-9._]{1,30}" required>
-        </label>
-        <label>TikTok (usuário, sem @)
-          <input name="tiktok" maxlength="30" pattern="[A-Za-z0-9._]{0,30}">
-        </label>
-        <div class="admin-actions">
-          <button class="btn btn-primary" type="submit">Salvar alterações</button>
-          <button class="btn btn-secondary" id="qrUploadButton" type="button">Enviar QR para impressão</button>
-          <button class="btn btn-secondary" id="logoutButton" type="button">Sair</button>
+        <div class="admin-dashboard-head">
+          <div><span class="admin-kicker">Painel de catálogo</span><h3>Organize seus desenhos</h3></div>
+          <button class="admin-trigger" id="logoutButton" type="button">Sair</button>
         </div>
-        <p class="admin-hint" id="adminCount"></p>
-        <p class="admin-hint">Você pode enviar várias imagens de uma vez (PNG, JPG ou WebP de até 8 MB cada).</p>
+        <div class="admin-summary" id="adminSummary"></div>
+        <div class="admin-settings-grid">
+          <label>Título do catálogo
+            <input name="title" maxlength="80" required>
+          </label>
+          <label>Instagram (usuário)
+            <input name="instagram" maxlength="30" pattern="[A-Za-z0-9._]{1,30}" required>
+          </label>
+          <label>TikTok (usuário, sem @)
+            <input name="tiktok" maxlength="30" pattern="[A-Za-z0-9._]{0,30}">
+          </label>
+          <div class="admin-actions admin-settings-actions">
+            <button class="btn btn-secondary" type="submit">Salvar configurações</button>
+            <button class="btn btn-secondary" id="qrUploadButton" type="button">Atualizar QR Pix</button>
+          </div>
+        </div>
+        <section class="admin-tool-section">
+          <div class="admin-section-head"><div><h3>Biblioteca de desenhos</h3><p id="adminCount" class="admin-hint"></p></div><button class="btn btn-primary" id="btnAddPanel" type="button">+ Adicionar desenhos</button></div>
+          <div class="admin-library-toolbar">
+            <label>Categoria
+              <select id="adminCategoryFilter"><option value="all">Todas as categorias</option></select>
+            </label>
+            <label>Nova categoria
+              <input id="newCategoryName" type="text" maxlength="50" placeholder="Ex.: Natal">
+            </label>
+            <button class="btn btn-secondary" id="addCategoryButton" type="button">Adicionar categoria</button>
+            <label class="admin-select-all"><input id="adminSelectAll" type="checkbox"> Selecionar todos</label>
+            <span id="adminSelectionCount" class="admin-hint"></span>
+          </div>
+          <div id="adminLibrary" class="admin-library"></div>
+        </section>
+        <section class="admin-tool-section export-section">
+          <div class="admin-section-head"><div><h3>Exportar catálogo</h3><p class="admin-hint">Os QR Codes do Instagram, TikTok e Pix aparecem automaticamente no PDF.</p></div></div>
+          <div class="export-actions">
+            <button class="btn btn-print" id="exportAllButton" type="button">PDF completo</button>
+            <button class="btn btn-secondary" id="exportCategoryButton" type="button">PDF da categoria</button>
+            <button class="btn btn-secondary" id="exportSelectedButton" type="button">PDF personalizado</button>
+          </div>
+        </section>
+        <p class="admin-hint">Envie PNG, JPG ou WebP de até 8 MB por imagem. Clique em um desenho para ajustar o enquadramento.</p>
         <input id="qrUpload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
       </form>
       <p class="admin-status" id="adminStatus" role="status"></p>

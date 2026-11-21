@@ -20,7 +20,9 @@ function imageResponse(entry) {
   return {
     id: entry.id,
     key: entry.key,
-    src: `/api/images/${encodeURIComponent(entry.key)}`
+    src: `/api/images/${encodeURIComponent(entry.key)}`,
+    name: entry.name || "",
+    categoryId: entry.categoryId || "geral"
   };
 }
 
@@ -83,6 +85,11 @@ export async function onRequestPost({ request, env }) {
     }
 
     const catalog = await readCatalog(env);
+    const requestedCategoryId = form.get("categoryId");
+    const categoryId = typeof requestedCategoryId === "string" &&
+      catalog.categories.some((category) => category.id === requestedCategoryId)
+      ? requestedCategoryId
+      : catalog.categories?.[0]?.id || "geral";
     let nextId = catalog.images.reduce((highest, image) => Math.max(highest, image.id), 0) + 1;
     const uploaded = [];
     const storedKeys = [];
@@ -93,6 +100,8 @@ export async function onRequestPost({ request, env }) {
         uploaded.push({
           id: replacing ? replaceId : nextId++,
           key,
+          name: file.name.replace(/\.[^.]+$/, "").slice(0, 80),
+          categoryId,
           scale: 1,
           offsetX: 0,
           offsetY: 0

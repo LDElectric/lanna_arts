@@ -28,7 +28,13 @@ const PRINT_IMAGE_MAX_EDGE = 1200;
 const PRINT_IMAGE_QUALITY = 0.82;
 const printImageCache = new Map();
 
-let catalog = { title: "Catálogo de Desenhos", instagram: "Lanna.artees", tiktok: "lanna.lopess", images: [] };
+let catalog = {
+  title: "Catálogo de Desenhos",
+  instagram: "Lanna.artees",
+  tiktok: "lanna.lopess",
+  categories: [{ id: "geral", name: "Geral", order: 0 }],
+  images: []
+};
 let admin = false;
 let activeImage = null;
 let imageBackup = null;
@@ -41,6 +47,9 @@ let printGeneration = 0;
 let printPreparationTimer = null;
 let printPreparationPromise = null;
 let uploading = false;
+let publicCategoryId = "all";
+let adminCategoryId = "all";
+let selectedExportIds = new Set();
 
 async function api(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", ...options });
@@ -54,6 +63,44 @@ function showToast(message) {
   toastElement.textContent = message;
   toastElement.classList.add("show");
   window.setTimeout(() => toastElement.classList.remove("show"), 2800);
+}
+
+function categoryName(categoryId) {
+  return catalog.categories.find((category) => category.id === categoryId)?.name || "Geral";
+}
+
+function filteredImages(categoryId = publicCategoryId) {
+  return categoryId === "all"
+    ? catalog.images
+    : catalog.images.filter((image) => image.categoryId === categoryId);
+}
+
+function renderCategoryControls() {
+  const publicBar = document.getElementById("publicCategoryBar");
+  const adminSelect = document.getElementById("adminCategoryFilter");
+  if (publicBar) {
+    publicBar.replaceChildren();
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = `category-chip${publicCategoryId === "all" ? " active" : ""}`;
+    all.textContent = "Todos";
+    all.addEventListener("click", () => { publicCategoryId = "all"; render(); });
+    publicBar.append(all);
+    for (const category of catalog.categories) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `category-chip${publicCategoryId === category.id ? " active" : ""}`;
+      button.textContent = category.name;
+      button.addEventListener("click", () => { publicCategoryId = category.id; render(); });
+      publicBar.append(button);
+    }
+  }
+  if (adminSelect) {
+    const current = adminSelect.value;
+    adminSelect.replaceChildren(new Option("Todas as categorias", "all"));
+    for (const category of catalog.categories) adminSelect.add(new Option(category.name, category.id));
+    adminSelect.value = catalog.categories.some((category) => category.id === current) ? current : "all";
+  }
 }
 
 function updateHeader() {
@@ -110,8 +157,9 @@ async function saveCatalog() {
       title: catalog.title,
       instagram: catalog.instagram,
       tiktok: catalog.tiktok,
-      images: catalog.images.map(({ id, key, scale, offsetX, offsetY }) =>
-        ({ id, key, scale, offsetX, offsetY }))
+      categories: catalog.categories.map(({ id, name, order }) => ({ id, name, order })),
+      images: catalog.images.map(({ id, key, name, categoryId, scale, offsetX, offsetY }) =>
+        ({ id, key, name: name || "", categoryId: categoryId || catalog.categories[0].id, scale, offsetX, offsetY }))
     })
   });
 }
@@ -127,7 +175,9 @@ async function refreshAdminCatalog() {
 
 function render() {
   catalogElement.replaceChildren();
-  for (const image of catalog.images) {
+  renderCategoryControls();
+  const visibleImages = filteredImages();
+  for (const image of visibleImages) {
     const frame = document.createElement("div");
     frame.className = "frame";
     frame.dataset.id = image.id;
@@ -154,6 +204,10 @@ function render() {
       }
     });
     content.append(picture);
+    const caption = document.createElement("div");
+    caption.className = "frame-caption";
+    caption.textContent = image.name || `Desenho ${String(catalog.images.indexOf(image) + 1).padStart(2, "0")}`;
+    content.append(caption);
     frame.append(content);
 
     if (admin) addFrameActions(frame, image);
@@ -161,7 +215,64 @@ function render() {
     requestAnimationFrame(() => updateImageTransform(picture, image));
   }
   updateAdminCount();
+  updateAdminLibrary();
   invalidatePrintPages();
+}
+
+function updateAdminLibrary() {
+  const count = document.getElementById("adminSelectionCount");
+  const selectAll = document.getElementById("adminSelectAll");
+  const library = document.getElementById("adminLibrary");
+  if (count) count.textContent = `${selectedExportIds.size} selecionado${selectedExportIds.size === 1 ? "" : "s"} para catálogo personalizado.`;
+  if (selectAll) selectAll.checked = catalog.images.length > 0 && selectedExportIds.size === catalog.images.length;
+  if (library) {
+    library.replaceChildren();
+    const images = adminCategoryId === "all"
+      ? catalog.images
+      : catalog.images.filter((image) => image.categoryId === adminCategoryId);
+    for (const image of images) {
+      const item = document.createElement("div");
+      item.className = "admin-library-item";
+      const picture = document.createElement("img");
+      picture.src = image.src;
+      picture.alt = image.name || "Desenho";
+      picture.loading = "lazy";
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedExportIds.has(image.id);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) selectedExportIds.add(image.id);
+        else selectedExportIds.delete(image.id);
+        updateAdminLibrary();
+      });
+      const name = document.createElement("span");
+      name.className = "admin-item-name";
+      name.textContent = image.name || `Desenho ${String(image.id).padStart(2, "0")}`;
+      label.append(checkbox, name);
+      const metadata = document.createElement("div");
+      metadata.className = "admin-item-meta";
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.value = image.name || "";
+      nameInput.placeholder = "Nome do desenho";
+      nameInput.maxLength = 80;
+      nameInput.addEventListener("change", async () => {
+        image.name = nameInput.value.trim();
+        try { await saveCatalog(); render(); } catch (error) { adminStatus.textContent = error.message; }
+      });
+      const categorySelect = document.createElement("select");
+      for (const category of catalog.categories) categorySelect.add(new Option(category.name, category.id));
+      categorySelect.value = image.categoryId || catalog.categories[0].id;
+      categorySelect.addEventListener("change", async () => {
+        image.categoryId = categorySelect.value;
+        try { await saveCatalog(); render(); } catch (error) { adminStatus.textContent = error.message; }
+      });
+      metadata.append(nameInput, categorySelect);
+      item.append(picture, label, metadata);
+      library.append(item);
+    }
+  }
 }
 
 function updateAdminCount() {
@@ -170,6 +281,17 @@ function updateAdminCount() {
   adminCount.textContent = admin && count > 0
     ? `${count} desenho${count === 1 ? "" : "s"} no catálogo.`
     : "";
+  const summary = document.getElementById("adminSummary");
+  if (summary) {
+    summary.replaceChildren();
+    [[count, "Desenhos"], [catalog.categories.length, "Categorias"], [selectedExportIds.size, "Selecionados"]]
+      .forEach(([value, label]) => {
+        const item = document.createElement("div");
+        item.className = "admin-summary-item";
+        item.innerHTML = `<strong>${value}</strong><span>${label}</span>`;
+        summary.append(item);
+      });
+  }
 }
 
 function updateRenderedTransforms() {
@@ -608,6 +730,7 @@ function drawingBatches(files) {
 async function uploadDrawingBatch(files, replaceId = null) {
   const form = new FormData();
   form.set("kind", "drawing");
+  if (adminCategoryId !== "all") form.set("categoryId", adminCategoryId);
   if (replaceId !== null) form.set("id", String(replaceId));
   for (const file of files) form.append("files", file, file.name);
   const result = await api("/api/admin/images", { method: "POST", body: form });
@@ -632,9 +755,9 @@ async function addDrawings(files, replaceId = null) {
       for (const item of added) {
         const existing = catalog.images.find((image) => image.id === item.id);
         if (existing) {
-          Object.assign(existing, { key: item.key, src: item.src, scale: 1, offsetX: 0, offsetY: 0 });
+        Object.assign(existing, { key: item.key, src: item.src, name: existing.name || item.name || "", categoryId: existing.categoryId || item.categoryId || catalog.categories[0].id, scale: 1, offsetX: 0, offsetY: 0 });
         } else {
-          catalog.images.push({ id: item.id, key: item.key, src: item.src, scale: 1, offsetX: 0, offsetY: 0 });
+        catalog.images.push({ id: item.id, key: item.key, src: item.src, name: item.name || "", categoryId: item.categoryId || catalog.categories[0].id, scale: 1, offsetX: 0, offsetY: 0 });
         }
       }
       replaceId = null;
@@ -714,7 +837,30 @@ adminPanel.addEventListener("submit", async (event) => {
   }
 });
 
+document.getElementById("adminCategoryFilter").addEventListener("change", (event) => {
+  adminCategoryId = event.target.value;
+  updateAdminLibrary();
+});
+
+document.getElementById("adminSelectAll").addEventListener("change", (event) => {
+  if (event.target.checked) catalog.images.forEach((image) => selectedExportIds.add(image.id));
+  else selectedExportIds.clear();
+  updateAdminLibrary();
+});
+
+document.getElementById("addCategoryButton").addEventListener("click", async () => {
+  const input = document.getElementById("newCategoryName");
+  const name = input.value.trim();
+  if (!name) { adminStatus.textContent = "Digite o nome da categoria."; return; }
+  const id = `${name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${Date.now().toString(36)}`.slice(0, 50);
+  catalog.categories.push({ id, name, order: catalog.categories.length });
+  input.value = "";
+  try { await saveCatalog(); render(); adminStatus.textContent = "Categoria criada."; }
+  catch (error) { adminStatus.textContent = error.message; }
+});
+
 document.getElementById("btnAdd").addEventListener("click", () => chooseDrawing());
+document.getElementById("btnAddPanel").addEventListener("click", () => chooseDrawing());
 document.getElementById("qrUploadButton").addEventListener("click", () => qrUpload.click());
 qrUpload.addEventListener("change", async () => {
   const file = qrUpload.files?.[0];
@@ -740,20 +886,15 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
   }
 });
 
-exportPdfButton.addEventListener("click", async () => {
-  if (catalog.images.length === 0) {
-    showToast("Adicione pelo menos um desenho para exportar.");
-    return;
-  }
-
-  const buttonContent = exportPdfButton.innerHTML;
-  exportPdfButton.disabled = true;
-  exportPdfButton.textContent = "Gerando PDF...";
-
+async function exportCatalogPdf(options = {}, button = null) {
+  const buttonContent = button?.innerHTML;
+  if (button) { button.disabled = true; button.textContent = "Gerando PDF..."; }
   try {
     const response = await fetch("/api/admin/catalog.pdf", {
       method: "POST",
-      credentials: "same-origin"
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(options)
     });
     if (!response.ok) {
       const contentType = response.headers.get("Content-Type") || "";
@@ -778,9 +919,19 @@ exportPdfButton.addEventListener("click", async () => {
   } catch (error) {
     showToast(error.message);
   } finally {
-    exportPdfButton.disabled = false;
-    exportPdfButton.innerHTML = buttonContent;
+    if (button) { button.disabled = false; button.innerHTML = buttonContent; }
   }
+}
+
+exportPdfButton.addEventListener("click", () => exportCatalogPdf({ mode: "all" }, exportPdfButton));
+document.getElementById("exportAllButton").addEventListener("click", (event) => exportCatalogPdf({ mode: "all" }, event.currentTarget));
+document.getElementById("exportCategoryButton").addEventListener("click", (event) => {
+  const categoryId = document.getElementById("adminCategoryFilter").value;
+  if (categoryId === "all") { showToast("Escolha uma categoria específica."); return; }
+  exportCatalogPdf({ mode: "category", categoryId, title: `${catalog.title} - ${categoryName(categoryId)}` }, event.currentTarget);
+});
+document.getElementById("exportSelectedButton").addEventListener("click", (event) => {
+  exportCatalogPdf({ mode: "custom", imageIds: Array.from(selectedExportIds), title: `${catalog.title} - seleção personalizada` }, event.currentTarget);
 });
 
 window.addEventListener("beforeprint", () => {
@@ -798,6 +949,18 @@ window.addEventListener("afterprint", () => {
   document.body.classList.remove("has-print-pages");
   updateRenderedTransforms();
 });
+
+window.preparePrintSelection = async (imageIds, title, qrImage) => {
+  const wanted = new Set((Array.isArray(imageIds) ? imageIds : []).map(Number));
+  const originalImages = catalog.images;
+  const originalTitle = catalog.title;
+  catalog.images = originalImages.filter((image) => wanted.has(image.id));
+  if (title) catalog.title = title;
+  publicCategoryId = "all";
+  updateHeader();
+  render();
+  await preparePrintCatalog(qrImage || null);
+};
 
 loadCatalog().catch((error) => {
   catalogElement.textContent = "Catálogo temporariamente indisponível.";

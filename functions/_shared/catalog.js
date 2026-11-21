@@ -5,8 +5,31 @@ export const DEFAULT_CATALOG = {
   instagram: "Lanna.artees",
   tiktok: "lanna.lopess",
   qrKey: null,
+  categories: [{ id: "geral", name: "Geral", order: 0 }],
   images: []
 };
+
+function normalizeCategories(categories) {
+  if (!Array.isArray(categories) || categories.length === 0) return DEFAULT_CATALOG.categories;
+  const normalized = categories
+    .filter((category) => category && typeof category.id === "string" && typeof category.name === "string")
+    .map((category, index) => ({
+      id: category.id,
+      name: category.name.trim().slice(0, 50),
+      order: Number.isFinite(category.order) ? category.order : index
+    }))
+    .filter((category) => /^[a-z0-9-]{1,50}$/.test(category.id) && category.name.length > 0);
+  return normalized.length > 0 ? normalized.sort((a, b) => a.order - b.order) : DEFAULT_CATALOG.categories;
+}
+
+function normalizeImages(images, categories) {
+  const categoryIds = new Set(categories.map((category) => category.id));
+  return (Array.isArray(images) ? images : []).map((image) => ({
+    ...image,
+    name: typeof image.name === "string" ? image.name.trim().slice(0, 80) : "",
+    categoryId: categoryIds.has(image.categoryId) ? image.categoryId : categories[0].id
+  }));
+}
 
 export async function readCatalog(env) {
   if (!env.CATALOG_KV) throw new Error("O namespace KV CATALOG_KV não está configurado.");
@@ -14,13 +37,15 @@ export async function readCatalog(env) {
   if (!value) return { ...DEFAULT_CATALOG, images: [] };
   try {
     const catalog = JSON.parse(value);
+    const categories = normalizeCategories(catalog.categories);
     return {
       ...DEFAULT_CATALOG,
       ...catalog,
       tiktok: typeof catalog.tiktok === "string" && catalog.tiktok
         ? catalog.tiktok
         : DEFAULT_CATALOG.tiktok,
-      images: Array.isArray(catalog.images) ? catalog.images : []
+      categories,
+      images: normalizeImages(catalog.images, categories)
     };
   } catch (error) {
     console.error("O manifesto catalog.json está inválido.", error);
@@ -57,10 +82,13 @@ export function publicCatalog(catalog) {
     title: catalog.title,
     instagram: catalog.instagram,
     tiktok: catalog.tiktok,
+    categories: catalog.categories,
     qr: catalog.qrKey ? "/api/qr" : null,
     images: catalog.images.map((image) => ({
       id: image.id,
       src: `/api/images/${encodeURIComponent(image.key)}`,
+      name: image.name || "",
+      categoryId: image.categoryId || catalog.categories[0].id,
       scale: image.scale,
       offsetX: image.offsetX,
       offsetY: image.offsetY
@@ -76,6 +104,8 @@ export function adminCatalog(catalog) {
       id: image.id,
       key: image.key,
       src: `/api/images/${encodeURIComponent(image.key)}`,
+      name: image.name || "",
+      categoryId: image.categoryId || catalog.categories[0].id,
       scale: image.scale,
       offsetX: image.offsetX,
       offsetY: image.offsetY
